@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 3: Command-Driven — VinteEnterprise ERP</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif; background: #fff; color: #333; font-size: 13px; line-height: 1.5; }
+
+  .wireframe-title { background: #f5f5f5; border-bottom: 2px solid #ccc; padding: 16px 24px; }
+  .wireframe-title h1 { font-size: 18px; color: #333; }
+  .wireframe-title p { font-size: 12px; color: #666; margin-top: 4px; }
+  .view-label { background: #333; color: #fff; padding: 10px 24px; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; margin-top: 32px; }
+
+  .badge-reuse { position: absolute; top: -6px; right: -6px; background: #4CAF50; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 10; white-space: nowrap; }
+  .badge-new { position: absolute; top: -6px; right: -6px; background: #FF9800; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 10; white-space: nowrap; }
+  .pos-rel { position: relative; display: inline-block; }
+  .pos-rel-block { position: relative; }
+
+  /* Shell */
+  .shell { display: grid; grid-template-columns: 44px 1fr; height: 640px; border: 2px solid #999; border-radius: 6px; overflow: hidden; margin: 16px 24px; }
+
+  /* Slim icon rail */
+  .slim-rail { background: #e4e4e4; border-right: 1px solid #ccc; display: flex; flex-direction: column; align-items: center; padding: 8px 0; gap: 2px; }
+  .slim-logo { width: 28px; height: 28px; background: #999; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: bold; margin-bottom: 8px; }
+  .slim-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 5px; cursor: pointer; font-size: 12px; }
+  .slim-icon:hover { background: #d0d0d0; }
+  .slim-icon.active { background: #ccc; }
+  .slim-divider { width: 20px; height: 1px; background: #ccc; margin: 4px 0; }
+  .slim-bottom { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .slim-avatar { width: 24px; height: 24px; background: #aaa; border-radius: 50%; margin-top: 4px; }
+
+  /* Main */
+  .main { display: flex; flex-direction: column; background: #f9f9f9; }
+  .content { flex: 1; overflow-y: auto; }
+
+  /* Command Bar (persistent top bar) */
+  .command-bar { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: #fff; border-bottom: 1px solid #ddd; }
+  .command-bar-input { flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 12px; background: #f8f8f8; font-family: inherit; }
+  .command-bar-context { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #888; }
+  .context-chip { padding: 3px 8px; border: 1px solid #ddd; border-radius: 12px; font-size: 10px; background: #f0f0f0; }
+  .command-bar-actions { display: flex; gap: 4px; }
+  .cmd-icon { width: 28px; height: 28px; background: #eee; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; cursor: pointer; }
+  .kbd { padding: 1px 5px; border: 1px solid #ccc; border-radius: 3px; font-size: 9px; color: #888; background: #f5f5f5; font-family: monospace; }
+
+  /* Page layout */
+  .page-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
+  .page-bar h2 { font-size: 15px; font-weight: bold; }
+  .page-bar-actions { display: flex; gap: 6px; }
+
+  .btn { padding: 6px 12px; border: 1px solid #bbb; border-radius: 4px; background: #eee; font-size: 11px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #ccc; border-color: #999; font-weight: bold; }
+  .btn-ghost { background: transparent; }
+  .btn-sm { padding: 4px 8px; font-size: 10px; }
+  .btn-xs { padding: 2px 6px; font-size: 9px; }
+
+  /* Dashboard — agenda style */
+  .agenda-layout { display: grid; grid-template-columns: 1fr 320px; gap: 0; height: 100%; }
+  .agenda-main { overflow-y: auto; padding: 16px; }
+  .agenda-aside { border-left: 1px solid #ddd; overflow-y: auto; padding: 12px; background: #fff; }
+
+  .today-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .today-header h3 { font-size: 14px; font-weight: bold; }
+  .today-date { font-size: 11px; color: #888; }
+
+  .task-strip { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+  .task-card { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; min-width: 140px; flex: 1; cursor: pointer; }
+  .task-card:hover { border-color: #bbb; }
+  .task-label { font-size: 9px; text-transform: uppercase; color: #888; font-weight: bold; }
+  .task-value { font-size: 16px; font-weight: bold; }
+  .task-action { font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 4px; margin-top: 2px; }
+
+  .section-title { font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.04em; color: #888; margin: 14px 0 8px; display: flex; align-items: center; gap: 6px; }
+  .section-title .count { background: #ddd; padding: 1px 6px; border-radius: 10px; font-size: 9px; }
+
+  .feed-item { display: flex; gap: 10px; padding: 8px 10px; border: 1px solid #eee; border-radius: 5px; margin-bottom: 4px; align-items: flex-start; font-size: 11px; }
+  .feed-item:hover { background: #f8f8f8; }
+  .feed-dot { width: 6px; height: 6px; border-radius: 50%; background: #bbb; margin-top: 5px; flex-shrink: 0; }
+  .feed-dot.urgent { background: #888; }
+  .feed-content { flex: 1; }
+  .feed-meta { font-size: 9px; color: #888; }
+  .feed-action { font-size: 9px; color: #666; cursor: pointer; text-decoration: underline; }
+
+  /* Aside panel */
+  .aside-section { margin-bottom: 14px; }
+  .aside-section h4 { font-size: 10px; font-weight: bold; text-transform: uppercase; color: #888; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .aside-kpi { display: flex; flex-direction: column; gap: 6px; }
+  .aside-kpi-item { display: flex; justify-content: space-between; align-items: center; padding: 6px 8px; border: 1px solid #eee; border-radius: 4px; }
+  .aside-kpi-label { font-size: 10px; color: #888; }
+  .aside-kpi-value { font-size: 13px; font-weight: bold; }
+
+  .aside-chart { height: 70px; border: 1px dashed #ccc; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 10px; background: #fafafa; }
+
+  /* Inline table with expand */
+  .inline-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .inline-table th { padding: 6px 10px; text-align: left; font-size: 9px; font-weight: bold; text-transform: uppercase; color: #888; border-bottom: 1px solid #ddd; background: #f8f8f8; }
+  .inline-table td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  .inline-table tr:hover td { background: #f5f5f5; }
+  .inline-table tr.expanded-trigger { cursor: pointer; }
+  .inline-table tr.expanded-trigger:hover td { background: #f0f0f0; }
+
+  .expand-row { background: #f5f5f5; }
+  .expand-row td { padding: 0; }
+  .expand-content { padding: 10px 14px; border-left: 3px solid #ccc; margin: 0 10px 6px; }
+  .expand-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 11px; }
+  .expand-field label { font-size: 9px; text-transform: uppercase; color: #888; display: block; }
+  .expand-field p { margin-top: 2px; }
+
+  .inline-edit-cell { position: relative; }
+  .inline-edit-cell input { width: 100%; padding: 3px 6px; border: 1px solid #bbb; border-radius: 3px; font-size: 11px; font-family: inherit; background: #fff; }
+
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+  .status-open { background: #eee; color: #666; }
+  .status-paid { background: #ddd; color: #555; }
+  .status-overdue { background: #ccc; color: #444; }
+
+  /* Quick create inline */
+  .quick-create { padding: 12px 14px; border: 1px dashed #ccc; border-radius: 6px; background: #fafafa; margin: 10px 16px; }
+  .quick-create-row { display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px; align-items: end; }
+  .quick-create-field { display: flex; flex-direction: column; gap: 3px; }
+  .quick-create-field label { font-size: 9px; color: #888; }
+  .quick-create-field input, .quick-create-field select { padding: 5px 8px; border: 1px solid #ccc; border-radius: 3px; font-size: 11px; font-family: inherit; }
+
+  .keyboard-hints { display: flex; gap: 12px; padding: 6px 16px; border-top: 1px solid #eee; background: #fafafa; font-size: 10px; color: #999; }
+  .keyboard-hints span { display: flex; align-items: center; gap: 4px; }
+
+  .note { background: #f5f5f5; border: 1px dashed #ccc; border-radius: 4px; padding: 8px 12px; font-size: 10px; color: #666; margin: 8px 0; font-style: italic; }
+
+  /* Tab pills */
+  .tab-pills { display: flex; gap: 4px; margin-bottom: 12px; }
+  .tab-pill { padding: 5px 12px; border: 1px solid #ccc; border-radius: 14px; font-size: 10px; cursor: pointer; background: #f5f5f5; font-family: inherit; }
+  .tab-pill.active { background: #ddd; border-color: #999; font-weight: bold; }
+
+  .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 6px; padding: 6px 0; font-size: 10px; color: #888; }
+</style>
+</head>
+<body>
+
+<div class="wireframe-title">
+  <h1>Option 3: Command-Driven</h1>
+  <p>Persistent command bar for search-first navigation. Slim icon rail (44px). Agenda-style dashboard with live feed. Inline editing and expandable rows — no modals for quick operations. Compact density for power users. Heavy keyboard shortcut support.</p>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 1 — App Shell + Command Bar</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 480px;">
+  <div class="slim-rail" style="position: relative;">
+    <span class="badge-reuse" style="top: 4px; right: -4px; position: absolute;" title="src/components/layout/AppShell.tsx">[REUSE] AppShell</span>
+    <div class="slim-logo">V</div>
+    <div class="slim-icon active" title="Dashboard">📊</div>
+    <div class="slim-icon" title="Vendas">🛒</div>
+    <div class="slim-icon" title="Compras">📦</div>
+    <div class="slim-icon" title="Estoque">🏭</div>
+    <div class="slim-icon" title="Financeiro">💰</div>
+    <div class="slim-icon" title="Fiscal">📄</div>
+    <div class="slim-divider"></div>
+    <div class="slim-icon" title="CRM">👥</div>
+    <div class="slim-icon" title="PDV">🖥️</div>
+    <div class="slim-icon" title="Produção">⚙️</div>
+    <div class="slim-bottom">
+      <div class="slim-icon" title="Config">⚙</div>
+      <div class="slim-avatar"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- NEW: CommandBar (persistent, always visible) -->
+    <div class="pos-rel-block">
+      <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: src/components/layout/CommandBar.tsx">[NEW] CommandBar</span>
+      <div class="command-bar">
+        <div class="command-bar-context">
+          <span class="context-chip">📊 Dashboard</span>
+        </div>
+        <input class="command-bar-input" placeholder="Buscar, navegar ou executar ação... (digite / para comandos)" />
+        <div class="command-bar-actions">
+          <div class="cmd-icon">🔔</div>
+          <div class="cmd-icon" style="font-size: 9px;">JS</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content" style="padding: 16px;">
+      <div class="note">ℹ️ The Command Bar is always visible at the top. Typing "/" opens command mode (like Slack). Typing text searches across all modules. Context chip shows current location. Press Esc to clear, Tab to autocomplete. Keyboard shortcuts shown in footer bar.</div>
+      
+      <div class="note">ℹ️ Slim rail (44px) with icon tooltips. Each icon navigates directly. No expand panel — all navigation via Command Bar or clicking icons. Right-click icon for sub-menu.</div>
+    </div>
+
+    <!-- NEW: KeyboardHints footer -->
+    <div class="pos-rel-block">
+      <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: persistent keyboard hints footer">[NEW] KeyboardHints</span>
+      <div class="keyboard-hints">
+        <span><span class="kbd">/</span> Comando</span>
+        <span><span class="kbd">⌘K</span> Busca rápida</span>
+        <span><span class="kbd">⌘N</span> Novo registro</span>
+        <span><span class="kbd">⌘E</span> Editar</span>
+        <span><span class="kbd">Esc</span> Fechar</span>
+        <span><span class="kbd">↑↓</span> Navegar</span>
+        <span><span class="kbd">Enter</span> Abrir</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 2 — Dashboard (Agenda + Live Feed)</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 680px;">
+  <div class="slim-rail">
+    <div class="slim-logo">V</div>
+    <div class="slim-icon active">📊</div>
+    <div class="slim-icon">🛒</div>
+    <div class="slim-icon">📦</div>
+    <div class="slim-icon">💰</div>
+    <div class="slim-icon">📄</div>
+    <div class="slim-divider"></div>
+    <div class="slim-icon">👥</div>
+    <div class="slim-icon">🖥️</div>
+    <div class="slim-bottom">
+      <div class="slim-icon">⚙</div>
+      <div class="slim-avatar"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="command-bar">
+      <span class="context-chip">📊 Dashboard</span>
+      <input class="command-bar-input" placeholder="Buscar, navegar ou executar ação..." />
+      <div class="command-bar-actions">
+        <div class="cmd-icon">🔔</div>
+        <div class="cmd-icon" style="font-size: 9px;">JS</div>
+      </div>
+    </div>
+
+    <!-- Agenda layout -->
+    <div class="agenda-layout">
+      <div class="agenda-main">
+
+        <div class="today-header">
+          <h3>Hoje</h3>
+          <span class="today-date">Sexta, 28 de fevereiro de 2026</span>
+        </div>
+
+        <!-- Task strip — actionable cards -->
+        <!-- NEW: TaskStrip -->
+        <div class="pos-rel-block">
+          <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: src/features/dashboard/TaskStrip.tsx">[NEW] TaskStrip</span>
+          <div class="task-strip">
+            <div class="task-card">
+              <div class="task-label">Vendas hoje</div>
+              <div class="task-value">R$ 12.450</div>
+              <div class="task-action">8 vendas → ver todas</div>
+            </div>
+            <div class="task-card">
+              <div class="task-label">Compras pendentes</div>
+              <div class="task-value">3</div>
+              <div class="task-action">R$ 8.200 → aprovar</div>
+            </div>
+            <div class="task-card">
+              <div class="task-label">Vencidos a receber</div>
+              <div class="task-value">R$ 4.380</div>
+              <div class="task-action">5 títulos → cobrar</div>
+            </div>
+            <div class="task-card">
+              <div class="task-label">Estoque crítico</div>
+              <div class="task-value">12</div>
+              <div class="task-action">produtos → repor</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Urgent actions -->
+        <div class="section-title">🔥 Ações urgentes <span class="count">4</span></div>
+        
+        <!-- NEW: ActionFeed -->
+        <div class="pos-rel-block">
+          <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: src/features/dashboard/ActionFeed.tsx">[NEW] ActionFeed</span>
+          <div class="feed-item">
+            <div class="feed-dot urgent"></div>
+            <div class="feed-content">
+              <strong>Fornecedor ABC</strong> — R$ 2.100 vencido há 3 dias
+              <div class="feed-meta">Financeiro · Contas a pagar</div>
+            </div>
+            <div><span class="feed-action">Baixar</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot urgent"></div>
+            <div class="feed-content">
+              <strong>Aluguel Galpão</strong> — R$ 4.500 vence hoje
+              <div class="feed-meta">Financeiro · Contas a pagar</div>
+            </div>
+            <div><span class="feed-action">Pagar</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot"></div>
+            <div class="feed-content">
+              <strong>Cimento CP-II</strong> — Estoque: 5 un (mín: 20)
+              <div class="feed-meta">Estoque · Abaixo do mínimo</div>
+            </div>
+            <div><span class="feed-action">Comprar</span></div>
+          </div>
+          <div class="feed-item">
+            <div class="feed-dot"></div>
+            <div class="feed-content">
+              <strong>Construtora Alfa</strong> — R$ 15.600 vencido há 5 dias
+              <div class="feed-meta">Financeiro · Contas a receber</div>
+            </div>
+            <div><span class="feed-action">Cobrar</span></div>
+          </div>
+        </div>
+
+        <!-- Live activity -->
+        <div class="section-title">📡 Atividade em tempo real</div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content">Venda #1847 finalizada — R$ 2.450<div class="feed-meta">Maria Santos · há 12 min</div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content">NF-e 000.142.891 emitida<div class="feed-meta">Sistema · há 15 min</div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content">Recebimento #302 confirmado<div class="feed-meta">Carlos Lima · há 28 min</div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content">Título #4521 baixado — R$ 1.200<div class="feed-meta">Ana Pereira · há 45 min</div></div>
+        </div>
+
+        <!-- Appointments -->
+        <div class="section-title">📅 Agenda</div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content"><strong>09:00</strong> — Reunião c/ fornecedor Alfa<div class="feed-meta">Sala 2 · 30 min</div></div>
+        </div>
+        <div class="feed-item">
+          <div class="feed-dot"></div>
+          <div class="feed-content"><strong>14:30</strong> — Entrega pedido #1204<div class="feed-meta">Logística</div></div>
+        </div>
+      </div>
+
+      <!-- Aside panel -->
+      <div class="agenda-aside">
+        <div class="aside-section">
+          <h4>Resumo financeiro</h4>
+          <div class="aside-kpi">
+            <div class="aside-kpi-item"><span class="aside-kpi-label">Receitas mês</span><span class="aside-kpi-value">R$ 45.200</span></div>
+            <div class="aside-kpi-item"><span class="aside-kpi-label">Despesas mês</span><span class="aside-kpi-value">R$ 31.800</span></div>
+            <div class="aside-kpi-item"><span class="aside-kpi-label">Resultado</span><span class="aside-kpi-value">R$ 13.400</span></div>
+          </div>
+        </div>
+        <div class="aside-section">
+          <h4>Vendas semana</h4>
+          <div class="aside-chart">[Sparkline chart]</div>
+        </div>
+        <div class="aside-section">
+          <h4>Top produtos</h4>
+          <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11px;">
+            <div style="display: flex; justify-content: space-between;"><span>1. Cimento CP-II</span><span style="color: #888;">142 un</span></div>
+            <div style="display: flex; justify-content: space-between;"><span>2. Vergalhão 10mm</span><span style="color: #888;">98 un</span></div>
+            <div style="display: flex; justify-content: space-between;"><span>3. Tinta Suvinil</span><span style="color: #888;">76 un</span></div>
+            <div style="display: flex; justify-content: space-between;"><span>4. Fio 2.5mm</span><span style="color: #888;">64 un</span></div>
+          </div>
+        </div>
+        <div class="aside-section">
+          <h4>Contratos ativos</h4>
+          <div class="aside-kpi-item"><span class="aside-kpi-label">Total</span><span class="aside-kpi-value">24</span></div>
+          <div class="aside-kpi-item" style="margin-top: 4px;"><span class="aside-kpi-label">MRR</span><span class="aside-kpi-value">R$ 18.600</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyboard-hints">
+      <span><span class="kbd">/</span> Comando</span>
+      <span><span class="kbd">⌘K</span> Busca</span>
+      <span><span class="kbd">⌘N</span> Novo</span>
+      <span><span class="kbd">R</span> Refresh</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 3 — Module Page (Vendas) — Inline Edit + Expand Rows</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 700px;">
+  <div class="slim-rail">
+    <div class="slim-logo">V</div>
+    <div class="slim-icon">📊</div>
+    <div class="slim-icon active">🛒</div>
+    <div class="slim-icon">📦</div>
+    <div class="slim-icon">💰</div>
+    <div class="slim-icon">📄</div>
+    <div class="slim-divider"></div>
+    <div class="slim-icon">👥</div>
+    <div class="slim-bottom">
+      <div class="slim-icon">⚙</div>
+      <div class="slim-avatar"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="command-bar">
+      <span class="context-chip">🛒 Vendas</span>
+      <input class="command-bar-input" placeholder="Buscar pedido, cliente... (/ para comandos)" />
+      <div class="command-bar-actions">
+        <div class="cmd-icon">🔔</div>
+        <div class="cmd-icon" style="font-size: 9px;">JS</div>
+      </div>
+    </div>
+
+    <div class="content" style="padding: 0;">
+      <div class="page-bar">
+        <!-- REUSABLE: PageHeader -->
+        <div class="pos-rel">
+          <span class="badge-reuse" style="top: -10px; right: -10px; position: absolute;" title="src/components/ui/PageHeader.tsx">[REUSE] PageHeader</span>
+          <h2>Vendas</h2>
+        </div>
+        <div class="page-bar-actions">
+          <div class="btn btn-ghost btn-sm">Exportar</div>
+          <div class="btn btn-primary btn-sm">+ Nova venda <span class="kbd" style="margin-left: 4px;">⌘N</span></div>
+        </div>
+      </div>
+
+      <!-- Tab pills -->
+      <div style="padding: 0 16px;">
+        <!-- REUSABLE: Tabs (pill variant) -->
+        <div class="pos-rel-block">
+          <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/Tabs.tsx">[REUSE] Tabs</span>
+          <div class="tab-pills">
+            <div class="tab-pill active">Pedidos (24)</div>
+            <div class="tab-pill">Orçamentos (8)</div>
+            <div class="tab-pill">Devoluções (2)</div>
+          </div>
+        </div>
+
+        <!-- Inline filter row -->
+        <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 8px;">
+          <input style="flex: 1; padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px;" placeholder="Filtrar..." />
+          <select style="padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; width: 100px;"><option>Status</option></select>
+          <select style="padding: 5px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 10px; width: 100px;"><option>Período</option></select>
+          <span style="font-size: 10px; color: #888;">24 pedidos</span>
+        </div>
+      </div>
+
+      <!-- Inline expandable table -->
+      <div style="padding: 0 16px;">
+        <!-- REUSABLE: DataTable (enhanced with inline expand) -->
+        <div class="pos-rel-block">
+          <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/DataTable.tsx">[REUSE] DataTable</span>
+          <div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff;">
+            <table class="inline-table">
+              <thead>
+                <tr>
+                  <th style="width: 24px;"></th>
+                  <th>Nº</th>
+                  <th>Cliente</th>
+                  <th>Data</th>
+                  <th>Itens</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Expanded row -->
+                <tr class="expanded-trigger" style="background: #f0f0f0;">
+                  <td style="font-size: 10px; color: #999;">▼</td>
+                  <td><strong>#1847</strong></td>
+                  <td>Maria Santos</td>
+                  <td>28/02</td>
+                  <td>3</td>
+                  <td>R$ 2.450</td>
+                  <td>
+                    <!-- REUSABLE: StatusSelect -->
+                    <div class="pos-rel">
+                      <span class="badge-reuse" style="top: -10px; right: -10px; position: absolute;" title="src/components/ui/StatusSelect.tsx">[REUSE] StatusSelect</span>
+                      <span class="status-pill status-paid">Pago ▾</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display: flex; gap: 3px;">
+                      <div class="btn btn-xs">NF-e</div>
+                      <div class="btn btn-xs">🖨️</div>
+                    </div>
+                  </td>
+                </tr>
+                <!-- Expanded detail inline -->
+                <!-- NEW: InlineExpandRow -->
+                <tr class="expand-row">
+                  <td colspan="8" style="position: relative;">
+                    <span class="badge-new" style="top: 4px; right: 4px; position: absolute;" title="To be created: inline expand row component">[NEW] InlineExpand</span>
+                    <div class="expand-content">
+                      <div class="expand-grid">
+                        <div class="expand-field"><label>CPF</label><p>123.456.789-00</p></div>
+                        <div class="expand-field"><label>Forma pgto</label><p>Cartão 2x</p></div>
+                        <div class="expand-field"><label>Desconto</label><p>R$ 150 (5,8%)</p></div>
+                        <div class="expand-field"><label>Vendedor</label><p>João Silva</p></div>
+                      </div>
+                      <div style="margin-top: 8px;">
+                        <table class="inline-table" style="font-size: 10px;">
+                          <thead><tr><th>Produto</th><th>Qtd</th><th>Unit.</th><th>Subtotal</th></tr></thead>
+                          <tbody>
+                            <tr><td>Cimento CP-II 50kg</td><td>10</td><td>R$ 38</td><td>R$ 380</td></tr>
+                            <tr><td>Vergalhão CA-50 10mm</td><td>20</td><td>R$ 45</td><td>R$ 900</td></tr>
+                            <tr><td>Tinta Coral 18L</td><td>5</td><td>R$ 234</td><td>R$ 1.170</td></tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      <div style="display: flex; gap: 6px; margin-top: 8px;">
+                        <div class="btn btn-xs">Editar pedido</div>
+                        <div class="btn btn-xs">Duplicar</div>
+                        <div class="btn btn-xs" style="margin-left: auto; color: #888;">Excluir</div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Normal rows -->
+                <tr class="expanded-trigger">
+                  <td style="font-size: 10px; color: #ccc;">▶</td>
+                  <td><strong>#1846</strong></td>
+                  <td>Tech Solutions Ltda</td>
+                  <td>28/02</td>
+                  <td>7</td>
+                  <td>R$ 8.320</td>
+                  <td><span class="status-pill status-open">Aberto ▾</span></td>
+                  <td><div style="display: flex; gap: 3px;"><div class="btn btn-xs">NF-e</div><div class="btn btn-xs">🖨️</div></div></td>
+                </tr>
+                <tr class="expanded-trigger">
+                  <td style="font-size: 10px; color: #ccc;">▶</td>
+                  <td><strong>#1845</strong></td>
+                  <td>Carlos Oliveira</td>
+                  <td>27/02</td>
+                  <td>1</td>
+                  <td>R$ 890</td>
+                  <td><span class="status-pill status-paid">Pago ▾</span></td>
+                  <td><div style="display: flex; gap: 3px;"><div class="btn btn-xs">NF-e</div></div></td>
+                </tr>
+                <tr class="expanded-trigger">
+                  <td style="font-size: 10px; color: #ccc;">▶</td>
+                  <td><strong>#1844</strong></td>
+                  <td>Construtora Alfa</td>
+                  <td>27/02</td>
+                  <td>12</td>
+                  <td>R$ 15.600</td>
+                  <td><span class="status-pill status-overdue">Vencido ▾</span></td>
+                  <td><div style="display: flex; gap: 3px;"><div class="btn btn-xs">NF-e</div><div class="btn btn-xs">🖨️</div></div></td>
+                </tr>
+                <tr class="expanded-trigger">
+                  <td style="font-size: 10px; color: #ccc;">▶</td>
+                  <td><strong>#1843</strong></td>
+                  <td>Ana Pereira ME</td>
+                  <td>26/02</td>
+                  <td>2</td>
+                  <td>R$ 1.240</td>
+                  <td><span class="status-pill status-paid">Pago ▾</span></td>
+                  <td><div style="display: flex; gap: 3px;"><div class="btn btn-xs">NF-e</div></div></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- REUSABLE: Pagination -->
+        <div class="pos-rel-block">
+          <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/Pagination.tsx">[REUSE] Pagination</span>
+          <div class="pagination">
+            <span class="btn btn-xs btn-ghost" style="opacity: 0.4;">← Ant</span>
+            <span>1–5 de 24</span>
+            <span class="btn btn-xs btn-ghost">Próx →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyboard-hints">
+      <span><span class="kbd">↑↓</span> Navegar linhas</span>
+      <span><span class="kbd">Enter</span> Expandir/colapsar</span>
+      <span><span class="kbd">E</span> Editar</span>
+      <span><span class="kbd">D</span> Duplicar</span>
+      <span><span class="kbd">⌘N</span> Nova venda</span>
+      <span><span class="kbd">⌘P</span> Imprimir</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 4 — Quick Create (Inline, No Modal)</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 460px;">
+  <div class="slim-rail">
+    <div class="slim-logo">V</div>
+    <div class="slim-icon">📊</div>
+    <div class="slim-icon active">🛒</div>
+    <div class="slim-icon">📦</div>
+    <div class="slim-icon">💰</div>
+    <div class="slim-bottom">
+      <div class="slim-icon">⚙</div>
+      <div class="slim-avatar"></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="command-bar">
+      <span class="context-chip">🛒 Vendas → Novo</span>
+      <input class="command-bar-input" value="/novo venda" />
+      <div class="command-bar-actions">
+        <div class="cmd-icon">🔔</div>
+      </div>
+    </div>
+
+    <div class="content" style="padding: 12px 16px;">
+      <div class="page-bar">
+        <h2>Vendas</h2>
+      </div>
+
+      <!-- NEW: QuickCreateInline -->
+      <div class="pos-rel-block">
+        <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: src/components/QuickCreateInline.tsx">[NEW] QuickCreateInline</span>
+        <div class="quick-create">
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">Criar pedido rápido</div>
+          
+          <!-- REUSABLE: FormField -->
+          <div class="pos-rel-block">
+            <span class="badge-reuse" style="top: -6px; right: -6px; position: absolute;" title="src/components/ui/FormField.tsx">[REUSE] FormField</span>
+            <div class="quick-create-row">
+              <div class="quick-create-field">
+                <label>Cliente *</label>
+                <input type="text" placeholder="Buscar..." />
+              </div>
+              <div class="quick-create-field">
+                <label>Vendedor</label>
+                <select><option>João Silva</option></select>
+              </div>
+              <div class="quick-create-field">
+                <label>Forma pgto</label>
+                <select><option>Selecione...</option></select>
+              </div>
+              <div style="display: flex; gap: 4px; padding-bottom: 2px;">
+                <div class="btn btn-primary btn-sm">Criar <span class="kbd">⌘↵</span></div>
+                <div class="btn btn-ghost btn-sm">✕</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 6px; font-size: 10px; color: #888;">Pressione <span class="kbd">Tab</span> para avançar campos · <span class="kbd">⌘↵</span> para criar · <span class="kbd">Esc</span> para cancelar</div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top: 12px;">ℹ️ No modal needed — form appears inline above the table. The quick create covers the most common fields. For full form, user can click "Expandir formulário" to get all fields inline (still no modal). Entire flow is keyboard-driven: Tab between fields, Cmd+Enter to submit.</div>
+
+      <!-- Table behind (dimmed) -->
+      <div style="opacity: 0.4; margin-top: 10px;">
+        <div style="border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff;">
+          <table class="inline-table">
+            <thead><tr><th></th><th>Nº</th><th>Cliente</th><th>Data</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td style="color: #ccc;">▶</td><td>#1847</td><td>Maria Santos</td><td>28/02</td><td>R$ 2.450</td><td><span class="status-pill status-paid">Pago</span></td></tr>
+              <tr><td style="color: #ccc;">▶</td><td>#1846</td><td>Tech Solutions</td><td>28/02</td><td>R$ 8.320</td><td><span class="status-pill status-open">Aberto</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyboard-hints">
+      <span><span class="kbd">Tab</span> Próx campo</span>
+      <span><span class="kbd">⌘↵</span> Criar</span>
+      <span><span class="kbd">Esc</span> Cancelar</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

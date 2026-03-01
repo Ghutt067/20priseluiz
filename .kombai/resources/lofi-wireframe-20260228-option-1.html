@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 1: Refined Classic — VinteEnterprise ERP</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Comic Sans MS', 'Segoe UI', cursive, sans-serif; background: #fff; color: #333; font-size: 13px; line-height: 1.5; }
+  
+  .wireframe-title { background: #f5f5f5; border-bottom: 2px solid #ccc; padding: 16px 24px; }
+  .wireframe-title h1 { font-size: 18px; color: #333; }
+  .wireframe-title p { font-size: 12px; color: #666; margin-top: 4px; }
+
+  .view-label { background: #333; color: #fff; padding: 10px 24px; font-size: 14px; font-weight: bold; letter-spacing: 0.5px; margin-top: 32px; }
+  
+  /* Reuse / New badges */
+  .badge-reuse { position: absolute; top: -6px; right: -6px; background: #4CAF50; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 10; white-space: nowrap; }
+  .badge-new { position: absolute; top: -6px; right: -6px; background: #FF9800; color: #fff; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-family: Arial, sans-serif; font-weight: bold; z-index: 10; white-space: nowrap; }
+
+  /* Layout */
+  .shell { display: grid; grid-template-columns: 220px 1fr; height: 640px; border: 2px solid #999; border-radius: 6px; overflow: hidden; margin: 16px 24px; }
+  .shell-collapsed { grid-template-columns: 56px 1fr; }
+
+  /* Sidebar */
+  .sidebar { background: #e8e8e8; border-right: 2px solid #ccc; display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar-top { padding: 14px 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #ccc; }
+  .sidebar-logo { width: 32px; height: 32px; background: #999; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; font-weight: bold; flex-shrink: 0; }
+  .sidebar-brand { font-size: 13px; font-weight: bold; color: #333; }
+  .sidebar-collapse-btn { margin-left: auto; width: 24px; height: 24px; background: #ddd; border: 1px solid #bbb; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+  
+  .sidebar-search { padding: 8px 12px; }
+  .sidebar-search input { width: 100%; padding: 6px 8px; border: 1px solid #bbb; border-radius: 4px; font-size: 11px; background: #fff; }
+
+  .sidebar-favorites { padding: 6px 12px; border-bottom: 1px solid #ddd; }
+  .sidebar-favorites-title { font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: #888; margin-bottom: 4px; }
+  .sidebar-fav-item { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 4px; font-size: 12px; color: #333; cursor: pointer; }
+  .sidebar-fav-item:hover { background: #ddd; }
+  .sidebar-fav-icon { width: 16px; height: 16px; background: #ccc; border-radius: 3px; flex-shrink: 0; }
+
+  .sidebar-nav { flex: 1; padding: 6px 0; overflow-y: auto; }
+  .sidebar-group-title { font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.08em; color: #888; padding: 8px 12px 3px; }
+  .sidebar-link { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: 12px; color: #444; cursor: pointer; border-left: 3px solid transparent; }
+  .sidebar-link:hover { background: #ddd; }
+  .sidebar-link.active { background: #d5d5d5; border-left-color: #999; font-weight: bold; color: #222; }
+  .sidebar-link-icon { width: 16px; height: 16px; background: #bbb; border-radius: 3px; flex-shrink: 0; }
+
+  .sidebar-user { padding: 10px 12px; border-top: 1px solid #ccc; display: flex; align-items: center; gap: 8px; }
+  .sidebar-avatar { width: 28px; height: 28px; background: #aaa; border-radius: 50%; flex-shrink: 0; }
+  .sidebar-user-info { font-size: 11px; }
+  .sidebar-user-name { font-weight: bold; color: #333; }
+  .sidebar-user-role { color: #888; font-size: 10px; }
+
+  /* Main area */
+  .main { display: flex; flex-direction: column; background: #f9f9f9; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 1px solid #ddd; background: #fff; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .breadcrumb { font-size: 11px; color: #888; }
+  .breadcrumb span { color: #333; font-weight: 500; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+  .topbar-search { padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; width: 200px; background: #f5f5f5; color: #999; }
+  .topbar-icon { width: 28px; height: 28px; background: #eee; border: 1px solid #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+  .content { flex: 1; padding: 20px; overflow-y: auto; }
+
+  /* Components */
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .page-header h2 { font-size: 18px; font-weight: bold; }
+  .page-header-actions { display: flex; gap: 8px; }
+
+  .btn { padding: 7px 14px; border: 1px solid #bbb; border-radius: 4px; background: #eee; font-size: 11px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #ccc; border-color: #999; font-weight: bold; }
+  .btn-ghost { background: transparent; }
+  .btn-sm { padding: 4px 10px; font-size: 10px; }
+
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px; }
+  .kpi-card { padding: 12px 14px; border: 1px solid #ddd; border-radius: 6px; background: #fff; }
+  .kpi-label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.04em; }
+  .kpi-value { font-size: 20px; font-weight: bold; color: #333; margin: 2px 0; }
+  .kpi-sub { font-size: 10px; color: #888; }
+
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .section-card { border: 1px solid #ddd; border-radius: 6px; background: #fff; padding: 14px; }
+  .section-card h3 { font-size: 13px; font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .count-badge { background: #ddd; padding: 1px 6px; border-radius: 10px; font-size: 10px; }
+
+  .alert-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 4px; font-size: 11px; }
+  .alert-time { color: #888; font-size: 10px; min-width: 36px; }
+  .alert-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .alert-dot.warn { background: #999; }
+  .alert-dot.ok { background: #aaa; }
+
+  .activity-row { padding: 6px 8px; border: 1px solid #eee; border-radius: 4px; margin-bottom: 4px; }
+  .activity-title { font-size: 11px; font-weight: 500; }
+  .activity-meta { font-size: 10px; color: #888; }
+
+  /* Table */
+  .table-wrap { border: 1px solid #ddd; border-radius: 6px; overflow: hidden; background: #fff; }
+  table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  th { padding: 8px 10px; text-align: left; font-size: 9px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.04em; color: #888; border-bottom: 1px solid #ddd; background: #fafafa; }
+  td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f8f8f8; }
+
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
+  .status-open { background: #eee; color: #666; }
+  .status-paid { background: #ddd; color: #555; }
+  .status-overdue { background: #ccc; color: #444; }
+
+  /* Detail Panel */
+  .detail-panel { border: 1px solid #ddd; border-radius: 6px; background: #fff; margin-top: 12px; }
+  .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #eee; }
+  .detail-header h3 { font-size: 14px; font-weight: bold; }
+  .detail-body { padding: 14px 16px; }
+  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .detail-field label { font-size: 9px; text-transform: uppercase; color: #888; letter-spacing: 0.03em; }
+  .detail-field p { font-size: 12px; color: #333; margin-top: 2px; }
+
+  /* Tabs */
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid #ddd; margin-bottom: 14px; }
+  .tab { padding: 8px 14px; font-size: 11px; cursor: pointer; border-bottom: 2px solid transparent; color: #888; font-family: inherit; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab.active { color: #333; border-bottom-color: #999; font-weight: bold; }
+
+  /* Search toolbar */
+  .search-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .search-toolbar input { flex: 1; padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; }
+  .search-count { font-size: 10px; color: #888; }
+
+  /* Pagination */
+  .pagination { display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 8px 0; }
+  .pagination-info { font-size: 10px; color: #888; }
+
+  /* Form */
+  .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .form-field { display: grid; gap: 4px; }
+  .form-field label { font-size: 10px; color: #888; }
+  .form-field input, .form-field select, .form-field textarea { padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 12px; font-family: inherit; }
+  .form-field textarea { min-height: 60px; resize: vertical; }
+  .form-field.full { grid-column: span 2; }
+  .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+
+  /* Chart placeholder */
+  .chart-placeholder { height: 100px; border: 1px dashed #ccc; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 11px; background: #fafafa; }
+
+  /* Shortcuts strip */
+  .shortcuts { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .shortcut-btn { padding: 6px 12px; border: 1px solid #ccc; border-radius: 4px; background: #fff; font-size: 11px; cursor: pointer; font-family: inherit; }
+
+  /* Toast */
+  .toast-demo { position: absolute; top: 12px; right: 12px; padding: 10px 14px; border: 1px solid #ddd; border-left: 3px solid #aaa; border-radius: 6px; background: #fff; font-size: 11px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+
+  .pos-rel { position: relative; display: inline-block; }
+  .pos-rel-block { position: relative; }
+
+  /* Command palette */
+  .cmd-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.25); display: flex; align-items: flex-start; justify-content: center; padding-top: 80px; z-index: 20; border-radius: 4px; }
+  .cmd-palette { width: 360px; background: #fff; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.12); overflow: hidden; }
+  .cmd-input { width: 100%; padding: 12px 14px; border: none; border-bottom: 1px solid #ddd; font-size: 12px; font-family: inherit; outline: none; }
+  .cmd-list { padding: 4px; }
+  .cmd-item { display: flex; justify-content: space-between; padding: 8px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
+  .cmd-item:hover, .cmd-item.selected { background: #f0f0f0; }
+  .cmd-item-group { font-size: 9px; color: #888; }
+
+  .note { background: #f5f5f5; border: 1px dashed #ccc; border-radius: 4px; padding: 8px 12px; font-size: 10px; color: #666; margin: 8px 0; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="wireframe-title">
+  <h1>Option 1: Refined Classic</h1>
+  <p>Collapsible sidebar with icons, favorites section, balanced density. Master-detail pattern for module pages. Conservative approach reusing most existing components.</p>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 1 — App Shell + Sidebar (Expanded)</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 580px;">
+  
+  <!-- REUSABLE: AppShell from src/components/layout/AppShell.tsx -->
+  <div class="sidebar" style="position: relative;">
+    <span class="badge-reuse" style="top: 4px; right: 4px; position: absolute;" title="src/components/layout/AppShell.tsx">[REUSE] AppShell</span>
+
+    <div class="sidebar-top">
+      <div class="sidebar-logo">V20</div>
+      <span class="sidebar-brand">Vinte ERP</span>
+      <!-- NEW COMPONENT: SidebarToggle -->
+      <div class="pos-rel">
+        <span class="badge-new" style="top: -10px; right: -10px; position: absolute;" title="To be created: sidebar collapse toggle">[NEW] CollapseBtn</span>
+        <div class="sidebar-collapse-btn">◀</div>
+      </div>
+    </div>
+
+    <div class="sidebar-search">
+      <input type="text" placeholder="Buscar módulo..." />
+    </div>
+
+    <!-- NEW COMPONENT: FavoritesSection -->
+    <div class="sidebar-favorites pos-rel-block">
+      <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: src/components/layout/SidebarFavorites.tsx">[NEW] Favorites</span>
+      <div class="sidebar-favorites-title">⭐ Favoritos</div>
+      <div class="sidebar-fav-item"><div class="sidebar-fav-icon"></div> Dashboard</div>
+      <div class="sidebar-fav-item"><div class="sidebar-fav-icon"></div> Vendas</div>
+      <div class="sidebar-fav-item"><div class="sidebar-fav-icon"></div> Financeiro</div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="sidebar-group-title">Geral</div>
+      <div class="sidebar-link active"><div class="sidebar-link-icon"></div> Dashboard</div>
+
+      <div class="sidebar-group-title">Comercial</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Vendas</div>
+
+      <div class="sidebar-group-title">Estoque</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Compras</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Estoque</div>
+
+      <div class="sidebar-group-title">Financeiro</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Financeiro</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Relatórios</div>
+
+      <div class="sidebar-group-title">Fiscal</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Fiscal</div>
+
+      <div class="sidebar-group-title">Serviços</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Serviços</div>
+
+      <div class="sidebar-group-title">CRM</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Comercial (CRM)</div>
+      
+      <div class="sidebar-group-title">PDV</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Frente de Caixa</div>
+
+      <div class="sidebar-group-title">Administração</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Cadastros</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Equipe</div>
+      <div class="sidebar-link"><div class="sidebar-link-icon"></div> Configurações</div>
+    </nav>
+
+    <div class="sidebar-user">
+      <div class="sidebar-avatar"></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">João Silva</div>
+        <div class="sidebar-user-role">Chefe</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <!-- REUSABLE: Breadcrumbs -->
+        <div class="pos-rel">
+          <span class="badge-reuse" style="top: -10px; right: -10px; position: absolute;" title="src/components/ui/Breadcrumbs.tsx">[REUSE] Breadcrumbs</span>
+          <div class="breadcrumb">Geral / <span>Dashboard</span></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <!-- REUSABLE: CommandPalette trigger -->
+        <div class="pos-rel">
+          <span class="badge-reuse" style="top: -10px; right: -10px; position: absolute;" title="src/components/ui/CommandPalette.tsx">[REUSE] CmdPalette</span>
+          <div class="topbar-search">⌘K Buscar ações...</div>
+        </div>
+        <!-- NEW: NotificationBell -->
+        <div class="pos-rel">
+          <span class="badge-new" style="top: -10px; right: -10px; position: absolute;" title="To be created: notification bell component">[NEW] Notifications</span>
+          <div class="topbar-icon">🔔</div>
+        </div>
+        <div class="topbar-icon" style="font-size: 10px;">JS</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="note">ℹ️ Sidebar is collapsible — clicking ◀ shrinks to 56px icon-only rail. Groups collapse/expand independently. Users can pin/unpin favorites by right-clicking module links.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 2 — Dashboard</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 700px;">
+  <div class="sidebar" style="width: 56px; min-width: 56px;">
+    <div class="sidebar-top" style="padding: 14px 0; justify-content: center;">
+      <div class="sidebar-logo">V</div>
+    </div>
+    <nav class="sidebar-nav" style="align-items: center; padding: 6px;">
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px; background: #999;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+    </nav>
+    <div class="sidebar-user" style="justify-content: center; padding: 10px 0;">
+      <div class="sidebar-avatar" style="width: 24px; height: 24px;"></div>
+    </div>
+  </div>
+
+  <div class="main" style="grid-column: 2;">
+    <div class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">Geral / <span>Dashboard</span></div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search">⌘K Buscar ações...</div>
+        <div class="topbar-icon">🔔</div>
+        <div class="topbar-icon" style="font-size: 10px;">JS</div>
+      </div>
+    </div>
+    <div class="content">
+      
+      <!-- REUSABLE: PageHeader -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/PageHeader.tsx">[REUSE] PageHeader</span>
+        <div class="page-header">
+          <h2>Dashboard</h2>
+          <div class="page-header-actions">
+            <div class="btn btn-ghost">Exportar</div>
+            <div class="btn btn-primary">+ Nova venda</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Shortcuts -->
+      <div class="pos-rel-block" style="margin-bottom: 14px;">
+        <span class="badge-new" style="top: -6px; right: 4px; position: absolute;" title="To be created: QuickActions component">[NEW] QuickActions</span>
+        <div class="shortcuts">
+          <div class="shortcut-btn">📦 Nova compra</div>
+          <div class="shortcut-btn">🧾 Emitir NF-e</div>
+          <div class="shortcut-btn">💰 Baixar título</div>
+          <div class="shortcut-btn">👤 Novo cliente</div>
+          <div class="shortcut-btn">📊 Fluxo de caixa</div>
+        </div>
+      </div>
+
+      <!-- KPI Row -->
+      <!-- REUSABLE: KpiCard / KpiRow -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/KpiCard.tsx">[REUSE] KpiRow + KpiCard</span>
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-label">Vendas hoje</div>
+            <div class="kpi-value">R$ 12.450</div>
+            <div class="kpi-sub">8 vendas realizadas</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Compras pendentes</div>
+            <div class="kpi-value">3</div>
+            <div class="kpi-sub">R$ 8.200 em pedidos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Receber vencidos</div>
+            <div class="kpi-value" style="color: #666;">R$ 4.380</div>
+            <div class="kpi-sub">5 títulos</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Estoque baixo</div>
+            <div class="kpi-value">12</div>
+            <div class="kpi-sub">produtos abaixo do mínimo</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Contratos ativos</div>
+            <div class="kpi-value">24</div>
+            <div class="kpi-sub">R$ 18.600/mês</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div class="split" style="margin-bottom: 14px;">
+        <div class="section-card">
+          <h3>Vendas da semana</h3>
+          <div class="chart-placeholder">[Gráfico de barras — vendas por dia]</div>
+        </div>
+        <div class="section-card">
+          <h3>DRE resumido</h3>
+          <div style="display: flex; justify-content: space-around; padding: 14px 0;">
+            <div style="text-align: center;"><div style="font-size: 10px; color: #888;">Receitas</div><div style="font-size: 16px; font-weight: bold;">R$ 45.200</div></div>
+            <div style="text-align: center;"><div style="font-size: 10px; color: #888;">Despesas</div><div style="font-size: 16px; font-weight: bold;">R$ 31.800</div></div>
+            <div style="text-align: center;"><div style="font-size: 10px; color: #888;">Resultado</div><div style="font-size: 16px; font-weight: bold;">R$ 13.400</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Split: Alerts + Activity -->
+      <div class="split">
+        <div class="section-card">
+          <h3>Alertas <span class="count-badge">7</span></h3>
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 10px; color: #888; font-weight: bold; margin-bottom: 4px;">ESTOQUE BAIXO</div>
+            <div class="alert-row"><div class="alert-dot warn"></div> Cimento CP-II 50kg — 5 un (mín: 20)</div>
+            <div class="alert-row"><div class="alert-dot warn"></div> Tinta Coral 18L — 2 un (mín: 10)</div>
+          </div>
+          <div style="margin-bottom: 8px;">
+            <div style="font-size: 10px; color: #888; font-weight: bold; margin-bottom: 4px;">PAGAMENTOS VENCIDOS</div>
+            <div class="alert-row"><div class="alert-dot warn"></div> Fornecedor ABC — R$ 2.100 (3 dias)</div>
+            <div class="alert-row"><div class="alert-dot warn"></div> Aluguel Galpão — R$ 4.500 (1 dia)</div>
+          </div>
+          <div>
+            <div style="font-size: 10px; color: #888; font-weight: bold; margin-bottom: 4px;">COMPROMISSOS HOJE</div>
+            <div class="alert-row"><span class="alert-time">09:00</span> Reunião c/ fornecedor Alfa</div>
+            <div class="alert-row"><span class="alert-time">14:30</span> Entrega pedido #1204</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>Atividade recente</h3>
+          <div class="activity-row">
+            <div class="activity-title">Venda #1847 finalizada</div>
+            <div class="activity-meta">Maria Santos — há 12 min</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-title">NF-e 000.142.891 emitida</div>
+            <div class="activity-meta">Sistema — há 15 min</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-title">Estoque atualizado (Recebimento #302)</div>
+            <div class="activity-meta">Carlos Lima — há 28 min</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-title">Título #4521 baixado — R$ 1.200</div>
+            <div class="activity-meta">Ana Pereira — há 45 min</div>
+          </div>
+          <div class="activity-row">
+            <div class="activity-title">Cliente "Tech Solutions" cadastrado</div>
+            <div class="activity-meta">João Silva — há 1h</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 3 — Module Page (Vendas) — Master-Detail</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 660px;">
+  <div class="sidebar" style="width: 56px; min-width: 56px;">
+    <div class="sidebar-top" style="padding: 14px 0; justify-content: center;"><div class="sidebar-logo">V</div></div>
+    <nav class="sidebar-nav" style="align-items: center; padding: 6px;">
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px; background: #999;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+      <div class="sidebar-link-icon" style="margin: 6px auto; width: 20px; height: 20px;"></div>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left"><div class="breadcrumb">Comercial / <span>Vendas</span></div></div>
+      <div class="topbar-right">
+        <div class="topbar-search">⌘K Buscar ações...</div>
+        <div class="topbar-icon">🔔</div>
+      </div>
+    </div>
+    <div class="content">
+      
+      <!-- REUSABLE: PageHeader -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/PageHeader.tsx">[REUSE] PageHeader</span>
+        <div class="page-header">
+          <h2>Vendas</h2>
+          <div class="page-header-actions">
+            <div class="btn btn-ghost">Exportar</div>
+            <div class="btn btn-primary">+ Nova venda</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REUSABLE: Tabs -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/Tabs.tsx">[REUSE] Tabs</span>
+        <div class="tabs">
+          <div class="tab active">Pedidos <span class="count-badge">24</span></div>
+          <div class="tab">Orçamentos <span class="count-badge">8</span></div>
+          <div class="tab">Devoluções</div>
+        </div>
+      </div>
+
+      <!-- REUSABLE: SearchToolbar -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/SearchToolbar.tsx">[REUSE] SearchToolbar</span>
+        <div class="search-toolbar">
+          <input type="text" placeholder="Buscar por cliente, nº pedido..." />
+          <select style="padding: 7px 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 11px; width: 120px;">
+            <option>Todos status</option>
+          </select>
+          <span class="search-count">24 pedidos</span>
+        </div>
+      </div>
+
+      <!-- REUSABLE: DataTable -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/DataTable.tsx">[REUSE] DataTable</span>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Nº</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Itens</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background: #f5f5f5;">
+                <td><strong>#1847</strong></td>
+                <td>Maria Santos</td>
+                <td>28/02/2026</td>
+                <td>3</td>
+                <td>R$ 2.450,00</td>
+                <td><span class="status-pill status-paid">Pago</span></td>
+                <td><span class="btn btn-sm">Ver</span></td>
+              </tr>
+              <tr>
+                <td><strong>#1846</strong></td>
+                <td>Tech Solutions Ltda</td>
+                <td>28/02/2026</td>
+                <td>7</td>
+                <td>R$ 8.320,00</td>
+                <td><span class="status-pill status-open">Aberto</span></td>
+                <td><span class="btn btn-sm">Ver</span></td>
+              </tr>
+              <tr>
+                <td><strong>#1845</strong></td>
+                <td>Carlos Oliveira</td>
+                <td>27/02/2026</td>
+                <td>1</td>
+                <td>R$ 890,00</td>
+                <td><span class="status-pill status-paid">Pago</span></td>
+                <td><span class="btn btn-sm">Ver</span></td>
+              </tr>
+              <tr>
+                <td><strong>#1844</strong></td>
+                <td>Construtora Alfa</td>
+                <td>27/02/2026</td>
+                <td>12</td>
+                <td>R$ 15.600,00</td>
+                <td><span class="status-pill status-overdue">Vencido</span></td>
+                <td><span class="btn btn-sm">Ver</span></td>
+              </tr>
+              <tr>
+                <td><strong>#1843</strong></td>
+                <td>Ana Pereira ME</td>
+                <td>26/02/2026</td>
+                <td>2</td>
+                <td>R$ 1.240,00</td>
+                <td><span class="status-pill status-paid">Pago</span></td>
+                <td><span class="btn btn-sm">Ver</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REUSABLE: Pagination -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/Pagination.tsx">[REUSE] Pagination</span>
+        <div class="pagination">
+          <div class="btn btn-sm btn-ghost" style="opacity: 0.4;">← Anterior</div>
+          <span class="pagination-info">1 – 5 de 24</span>
+          <div class="btn btn-sm btn-ghost">Próximo →</div>
+        </div>
+      </div>
+
+      <!-- REUSABLE: DetailPanel (expandable on row click) -->
+      <div class="pos-rel-block">
+        <span class="badge-reuse" style="top: -6px; right: 4px; position: absolute;" title="src/components/ui/DetailPanel.tsx">[REUSE] DetailPanel</span>
+        <div class="detail-panel">
+          <div class="detail-header">
+            <div>
+              <h3>Pedido #1847</h3>
+              <div style="font-size: 10px; color: #888;">Maria Santos · 28/02/2026 · 3 itens</div>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <div class="btn btn-sm">Imprimir</div>
+              <div class="btn btn-sm">Emitir NF-e</div>
+              <div class="btn btn-sm" style="font-size: 14px; padding: 2px 8px;">✕</div>
+            </div>
+          </div>
+          <div class="detail-body">
+            <div class="detail-grid">
+              <div class="detail-field"><label>Cliente</label><p>Maria Santos</p></div>
+              <div class="detail-field"><label>CPF/CNPJ</label><p>123.456.789-00</p></div>
+              <div class="detail-field"><label>Forma pgto</label><p>Cartão crédito 2x</p></div>
+              <div class="detail-field"><label>Subtotal</label><p>R$ 2.600,00</p></div>
+              <div class="detail-field"><label>Desconto</label><p>R$ 150,00 (5,8%)</p></div>
+              <div class="detail-field"><label>Total</label><p style="font-weight: bold;">R$ 2.450,00</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 4 — Create/Edit Form (Modal)</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 520px; position: relative;">
+  <div class="sidebar" style="width: 56px; min-width: 56px; opacity: 0.4;">
+    <div class="sidebar-top" style="padding: 14px 0; justify-content: center;"><div class="sidebar-logo">V</div></div>
+  </div>
+
+  <div class="main" style="opacity: 0.4;">
+    <div class="topbar">
+      <div class="topbar-left"><div class="breadcrumb">Comercial / <span>Vendas</span></div></div>
+      <div class="topbar-right"><div class="topbar-search">⌘K</div></div>
+    </div>
+    <div class="content">
+      <div class="page-header"><h2>Vendas</h2></div>
+    </div>
+  </div>
+
+  <!-- Modal overlay -->
+  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center; z-index: 20; border-radius: 4px;">
+    <!-- REUSABLE: Modal -->
+    <div class="pos-rel-block" style="width: 520px; background: #fff; border: 1px solid #ccc; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
+      <span class="badge-reuse" style="top: -6px; right: -6px; position: absolute;" title="src/components/ui/Modal.tsx">[REUSE] Modal</span>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #eee;">
+        <h3 style="font-size: 15px; font-weight: bold;">Nova venda</h3>
+        <div style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #888;">✕</div>
+      </div>
+
+      <div style="padding: 16px 20px;">
+        <!-- REUSABLE: FormField -->
+        <div class="pos-rel-block">
+          <span class="badge-reuse" style="top: -6px; right: -6px; position: absolute;" title="src/components/ui/FormField.tsx">[REUSE] FormField</span>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>Cliente *</label>
+              <input type="text" placeholder="Buscar cliente..." />
+            </div>
+            <div class="form-field">
+              <label>Data</label>
+              <input type="text" value="28/02/2026" />
+            </div>
+            <div class="form-field">
+              <label>Vendedor</label>
+              <select><option>João Silva</option></select>
+            </div>
+            <div class="form-field">
+              <label>Forma de pagamento</label>
+              <select><option>Selecione...</option></select>
+            </div>
+            <div class="form-field full">
+              <label>Observações</label>
+              <textarea placeholder="Observações internas..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid #eee;">
+        <div class="btn btn-ghost">Cancelar</div>
+        <div class="btn btn-primary">Criar pedido</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================ -->
+<div class="view-label">VIEW 5 — Command Palette (Ctrl+K)</div>
+<!-- ============================================ -->
+
+<div class="shell" style="height: 380px; position: relative;">
+  <div class="sidebar" style="width: 56px; min-width: 56px; opacity: 0.4;">
+    <div class="sidebar-top" style="padding: 14px 0; justify-content: center;"><div class="sidebar-logo">V</div></div>
+  </div>
+  <div class="main" style="opacity: 0.4;">
+    <div class="topbar"><div class="topbar-left"><div class="breadcrumb">Dashboard</div></div></div>
+    <div class="content"></div>
+  </div>
+
+  <!-- REUSABLE: CommandPalette -->
+  <div class="cmd-overlay">
+    <div class="pos-rel-block">
+      <span class="badge-reuse" style="top: -6px; right: -6px; position: absolute;" title="src/components/ui/CommandPalette.tsx">[REUSE] CommandPalette</span>
+      <div class="cmd-palette">
+        <input class="cmd-input" placeholder="Buscar módulos, ações..." value="vend" />
+        <div class="cmd-list">
+          <div class="cmd-item selected"><span>Vendas</span><span class="cmd-item-group">Comercial</span></div>
+          <div class="cmd-item"><span>Nova venda</span><span class="cmd-item-group">Ação rápida</span></div>
+          <div class="cmd-item"><span>Frente de Caixa (PDV)</span><span class="cmd-item-group">PDV</span></div>
+          <div class="cmd-item"><span>Vendedor — Perfil</span><span class="cmd-item-group">Administração</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

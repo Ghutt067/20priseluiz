@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinteEnterprise — Wireframe Option 1: Refined Classic</title>
+<style>
+  /* ── Balsamiq-style grayscale wireframe ── */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; font-size: 13px; }
+
+  /* Badge styles */
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; vertical-align: middle; margin-left: 6px; letter-spacing: 0.3px; }
+  .badge-reuse { background: #c6f6d5; color: #276749; }
+  .badge-new { background: #feebc8; color: #9c4221; }
+
+  .wireframe-label { text-align: center; padding: 18px 0 10px; font-size: 20px; font-weight: 700; color: #555; border-bottom: 2px dashed #ccc; margin-bottom: 24px; }
+  .view-title { font-size: 15px; font-weight: 700; color: #666; margin: 32px 0 12px; padding: 6px 12px; background: #e8e8e8; border-radius: 6px; display: inline-block; }
+
+  /* ── SHELL ── */
+  .shell { display: grid; grid-template-columns: 232px 1fr; height: 680px; border: 2px solid #bbb; border-radius: 10px; overflow: hidden; background: #fff; margin: 0 auto 40px; max-width: 1200px; }
+
+  /* Sidebar */
+  .sidebar { background: #1a1a2e; color: #ccc; display: flex; flex-direction: column; overflow-y: auto; }
+  .sidebar-logo { padding: 18px 20px 14px; border-bottom: 1px solid #2a2a44; }
+  .sidebar-logo img, .sidebar-logo span { display: block; font-size: 15px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+  .sidebar-search { margin: 10px 14px; padding: 7px 10px; border-radius: 6px; border: 1px solid #333; background: #16162b; color: #888; font-size: 12px; }
+  .sidebar-group-title { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #666; padding: 14px 20px 4px; letter-spacing: 0.8px; }
+  .sidebar-link { display: flex; align-items: center; gap: 10px; padding: 8px 20px; font-size: 13px; color: #aaa; cursor: pointer; border-left: 3px solid transparent; transition: all 0.15s; }
+  .sidebar-link:hover { background: #22224a; color: #ddd; }
+  .sidebar-link.active { background: #22224a; color: #fff; border-left-color: #6c63ff; font-weight: 600; }
+  .sidebar-link .icon { width: 18px; text-align: center; font-size: 14px; opacity: 0.7; }
+  .sidebar-collapse-btn { margin: auto 14px 12px; padding: 6px; text-align: center; font-size: 11px; color: #666; cursor: pointer; border: 1px dashed #444; border-radius: 4px; }
+
+  /* Content area */
+  .content { display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Topbar */
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px; height: 52px; border-bottom: 1px solid #e0e0e0; background: #fff; flex-shrink: 0; }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-role { font-size: 12px; color: #888; background: #f0f0f0; padding: 4px 10px; border-radius: 4px; }
+  .topbar-right { display: flex; align-items: center; gap: 14px; }
+  .topbar-search { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; width: 200px; background: #fafafa; color: #999; }
+  .topbar-notif { width: 28px; height: 28px; border-radius: 50%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; }
+  .topbar-avatar { width: 30px; height: 30px; border-radius: 50%; background: #ddd; }
+
+  /* Breadcrumbs */
+  .breadcrumbs { padding: 8px 24px; font-size: 12px; color: #999; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; }
+  .breadcrumbs span { color: #666; }
+
+  /* Main scroll area */
+  .main { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+  /* ── PAGE HEADER ── */
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .page-header h1 { font-size: 18px; font-weight: 700; color: #333; }
+  .page-header-actions { display: flex; gap: 8px; }
+
+  /* ── KPI ROW ── */
+  .kpi-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+  .kpi-card { flex: 1; min-width: 140px; background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 14px 16px; }
+  .kpi-card-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .kpi-card-value { font-size: 20px; font-weight: 700; color: #333; }
+  .kpi-card-subtitle { font-size: 11px; color: #999; margin-top: 2px; }
+  .kpi-card.danger .kpi-card-value { color: #c44; }
+  .kpi-card.success .kpi-card-value { color: #38a169; }
+  .kpi-card.warning .kpi-card-value { color: #d69e2e; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid #e8e8e8; margin-bottom: 16px; }
+  .tab { padding: 10px 18px; font-size: 13px; color: #888; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab.active { color: #333; font-weight: 600; border-bottom-color: #6c63ff; }
+  .tab .count { background: #e8e8e8; color: #666; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 6px; }
+
+  /* ── SEARCH TOOLBAR ── */
+  .search-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .search-toolbar input { flex: 1; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+  .search-toolbar .count-label { font-size: 12px; color: #999; white-space: nowrap; }
+
+  /* ── DATA TABLE ── */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { text-align: left; padding: 10px 12px; border-bottom: 2px solid #e0e0e0; font-weight: 600; color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+  .data-table td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
+  .data-table tr:hover td { background: #fafafa; }
+  .data-table .name { font-weight: 600; color: #333; }
+  .data-table .muted { color: #999; }
+
+  /* ── STATUS BADGE ── */
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .status-active { background: #c6f6d5; color: #276749; }
+  .status-pending { background: #fefcbf; color: #975a16; }
+  .status-overdue { background: #fed7d7; color: #9b2c2c; }
+  .status-draft { background: #e2e8f0; color: #4a5568; }
+
+  /* ── PAGINATION ── */
+  .pagination { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; font-size: 12px; color: #888; }
+  .pagination-btns { display: flex; gap: 4px; }
+  .pagination-btns button { padding: 4px 10px; border: 1px solid #ddd; border-radius: 4px; background: #fff; font-size: 11px; cursor: pointer; }
+  .pagination-btns button.active { background: #6c63ff; color: #fff; border-color: #6c63ff; }
+
+  /* ── DETAIL PANEL ── */
+  .detail-panel { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px 20px; margin-top: 12px; }
+  .detail-panel h3 { font-size: 14px; margin-bottom: 12px; }
+  .detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .detail-field label { font-size: 10px; color: #888; display: block; margin-bottom: 2px; }
+  .detail-field span { font-size: 13px; color: #333; font-weight: 500; }
+
+  /* ── BUTTONS ── */
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: #6c63ff; color: #fff; }
+  .btn-ghost { background: transparent; border: 1px solid #ddd; color: #666; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-danger { color: #c44; border-color: #c44; background: transparent; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position: relative; background: #00000015; border: 2px dashed #bbb; border-radius: 8px; padding: 24px; margin-top: 16px; }
+  .modal { background: #fff; border: 1px solid #ddd; border-radius: 10px; max-width: 520px; margin: 0 auto; box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+  .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid #eee; }
+  .modal-header h3 { font-size: 14px; }
+  .modal-body { padding: 18px 20px; }
+  .modal-footer { padding: 12px 20px; border-top: 1px solid #eee; display: flex; gap: 8px; justify-content: flex-end; }
+
+  /* ── FORM FIELDS ── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-field label { font-size: 11px; color: #666; font-weight: 500; }
+  .form-field input, .form-field select { padding: 8px 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 12px; }
+
+  /* ── CHARTS (placeholder) ── */
+  .chart-placeholder { background: #fafafa; border: 1px dashed #ccc; border-radius: 8px; height: 100px; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 12px; }
+
+  /* ── SPLIT PANELS ── */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #fff; border: 1px solid #e8e8e8; border-radius: 8px; padding: 16px; }
+  .card h3 { font-size: 14px; margin-bottom: 10px; }
+  .alert-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
+  .alert-row .time { color: #999; font-size: 11px; }
+
+  /* ── SHORTCUTS ── */
+  .shortcuts { display: flex; gap: 8px; margin-bottom: 20px; }
+
+  /* ── SECTION SEPARATOR ── */
+  .section-sep { border-top: 2px dashed #ddd; margin: 40px 0 20px; padding-top: 16px; }
+
+  .annotation { font-size: 11px; color: #888; font-style: italic; margin: 4px 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="wireframe-label">Option 1: Refined Classic <span class="badge badge-reuse">REUSE-HEAVY</span></div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 1: APP SHELL + DASHBOARD                             ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="view-title" style="margin-left:24px;">View 1 — AppShell + Dashboard</div>
+
+<div class="shell">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <span>🏢 VinteEnterprise</span>
+    </div>
+    <input class="sidebar-search" placeholder="Buscar módulos... (Ctrl+K)" readonly />
+    <div class="sidebar-group-title">Geral</div>
+    <div class="sidebar-link active"><span class="icon">📊</span> Dashboard</div>
+    <div class="sidebar-group-title">Comercial</div>
+    <div class="sidebar-link"><span class="icon">🛒</span> Vendas</div>
+    <div class="sidebar-link"><span class="icon">📦</span> Compras</div>
+    <div class="sidebar-group-title">Estoque</div>
+    <div class="sidebar-link"><span class="icon">🏭</span> Estoque</div>
+    <div class="sidebar-group-title">Financeiro</div>
+    <div class="sidebar-link"><span class="icon">💰</span> Financeiro</div>
+    <div class="sidebar-link"><span class="icon">📑</span> Relatórios</div>
+    <div class="sidebar-link"><span class="icon">📜</span> Contratos</div>
+    <div class="sidebar-group-title">Fiscal</div>
+    <div class="sidebar-link"><span class="icon">🧾</span> Fiscal</div>
+    <div class="sidebar-group-title">Serviços</div>
+    <div class="sidebar-link"><span class="icon">🔧</span> Serviços</div>
+    <div class="sidebar-group-title">CRM</div>
+    <div class="sidebar-link"><span class="icon">🤝</span> Comercial (CRM)</div>
+    <div class="sidebar-group-title">PDV</div>
+    <div class="sidebar-link"><span class="icon">🖥️</span> Frente de Caixa</div>
+    <div class="sidebar-collapse-btn">◀ Recolher sidebar</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-role">Perfil: Chefe</span>
+        <span class="badge badge-reuse">REUSE: AppShell</span>
+      </div>
+      <div class="topbar-right">
+        <input class="topbar-search" placeholder="Buscar módulos..." readonly />
+        <div class="topbar-notif">🔔</div>
+        <div class="topbar-avatar"></div>
+      </div>
+    </div>
+
+    <!-- Breadcrumbs -->
+    <div class="breadcrumbs">
+      <span>Dashboard</span>
+      <span class="badge badge-reuse">REUSE: Breadcrumbs</span>
+    </div>
+
+    <!-- Main content -->
+    <div class="main">
+      <div class="page-header">
+        <h1>Dashboard <span class="badge badge-reuse">REUSE: PageHeader</span></h1>
+      </div>
+
+      <!-- KPI Row -->
+      <div class="kpi-row">
+        <div class="kpi-card">
+          <div class="kpi-card-label">Vendas hoje</div>
+          <div class="kpi-card-value">12</div>
+          <div class="kpi-card-subtitle">R$ 4.820,00</div>
+        </div>
+        <div class="kpi-card danger">
+          <div class="kpi-card-label">A receber (vencido)</div>
+          <div class="kpi-card-value">3</div>
+          <div class="kpi-card-subtitle">R$ 1.250,00</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-label">Compras pendentes</div>
+          <div class="kpi-card-value">5</div>
+        </div>
+        <div class="kpi-card danger">
+          <div class="kpi-card-label">Estoque baixo</div>
+          <div class="kpi-card-value">8</div>
+        </div>
+        <div class="kpi-card success">
+          <div class="kpi-card-label">Resultado do mês</div>
+          <div class="kpi-card-value">R$ 12.400</div>
+          <div class="kpi-card-subtitle">R$ 45k receitas · R$ 32.6k despesas</div>
+        </div>
+      </div>
+      <p class="annotation">↑ <span class="badge badge-reuse">REUSE: KpiCard / KpiRow</span></p>
+
+      <!-- Chart area -->
+      <div class="chart-placeholder" style="margin-bottom:16px;">
+        📊 Faturamento (7 dias) — BarChart SVG
+      </div>
+
+      <!-- Quick shortcuts -->
+      <div class="shortcuts">
+        <button class="btn btn-primary">Nova Venda</button>
+        <button class="btn btn-primary">Nova Compra</button>
+        <button class="btn btn-primary">PDV</button>
+        <button class="btn btn-ghost">Kardex</button>
+      </div>
+
+      <!-- Split: Alerts + Activity -->
+      <div class="split">
+        <div class="card">
+          <h3>Pendências <span style="background:#c44;color:#fff;font-size:10px;padding:2px 7px;border-radius:10px;">5</span></h3>
+          <div class="alert-row"><span>🕐 14:30 — Reunião cliente ABC</span><span class="time">Agenda</span></div>
+          <div class="alert-row"><span>📅 25/02 — Título vencido R$ 850</span><span class="time">Financeiro</span></div>
+          <div class="alert-row"><span>📦 Parafuso M8 — 5 / mín 20</span><span class="time">Estoque</span></div>
+        </div>
+        <div class="card">
+          <h3>Log de operações</h3>
+          <div class="alert-row"><span>Venda #1042 registrada</span><span class="time">João · 2 min</span></div>
+          <div class="alert-row"><span>NF-e 000124 transmitida</span><span class="time">Sistema · 15 min</span></div>
+          <div class="alert-row"><span>Recebimento OC-87</span><span class="time">Maria · 1h</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 2: MODULE PAGE — VENDAS (Master-Detail)              ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="section-sep"></div>
+<div class="view-title" style="margin-left:24px;">View 2 — Module Page: Vendas (Master-Detail)</div>
+
+<div style="max-width:1200px; margin:0 auto 40px; border:2px solid #bbb; border-radius:10px; overflow:hidden; background:#fff;">
+  <!-- Topbar simplified -->
+  <div class="topbar">
+    <div class="topbar-left"><span class="topbar-role">Perfil: Vendedor</span></div>
+    <div class="topbar-right"><input class="topbar-search" placeholder="Buscar módulos..." readonly /></div>
+  </div>
+  <div class="breadcrumbs">Vendas <span class="badge badge-reuse">REUSE: Breadcrumbs</span></div>
+
+  <div style="padding:20px 24px;">
+    <div class="page-header">
+      <h1>Vendas <span class="badge badge-reuse">REUSE: PageHeader</span></h1>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active">Atendimento <span class="badge badge-reuse">REUSE: Tabs</span></div>
+      <div class="tab">Cotações <span class="count">3</span></div>
+      <div class="tab">Pedidos</div>
+      <div class="tab">Histórico</div>
+    </div>
+
+    <!-- Search toolbar -->
+    <div class="search-toolbar">
+      <input placeholder="Buscar produto (nome, SKU, código de barras)..." />
+      <span class="count-label">248 produto(s)</span>
+      <button class="btn btn-ghost btn-sm">Filtros</button>
+      <span class="badge badge-reuse">REUSE: SearchToolbar</span>
+    </div>
+
+    <!-- Data table -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Produto</th>
+          <th>SKU</th>
+          <th>Preço</th>
+          <th>Estoque</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="name">Parafuso Sextavado M8x30</td>
+          <td class="muted">PSM8-30</td>
+          <td>R$ 0,45</td>
+          <td>1.250</td>
+          <td><button class="btn btn-ghost btn-sm">+ Carrinho</button></td>
+        </tr>
+        <tr style="background:#f8f8ff;">
+          <td class="name">Porca Sextavada M8</td>
+          <td class="muted">PNM8</td>
+          <td>R$ 0,28</td>
+          <td><span style="color:#c44;">3</span></td>
+          <td><button class="btn btn-ghost btn-sm">+ Carrinho</button></td>
+        </tr>
+        <tr>
+          <td class="name">Arruela Lisa 5/16</td>
+          <td class="muted">AL516</td>
+          <td>R$ 0,12</td>
+          <td>5.400</td>
+          <td><button class="btn btn-ghost btn-sm">+ Carrinho</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="annotation">↑ <span class="badge badge-reuse">REUSE: DataTable + Column</span></p>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <span>Exibindo 1-20 de 248</span>
+      <div class="pagination-btns">
+        <button class="active">1</button><button>2</button><button>3</button><button>→</button>
+      </div>
+    </div>
+    <p class="annotation">↑ <span class="badge badge-reuse">REUSE: Pagination</span></p>
+
+    <!-- Detail Panel (master-detail) -->
+    <div class="detail-panel">
+      <h3>Parafuso Sextavado M8x30 <span class="status status-active">Ativo</span> <span class="badge badge-reuse">REUSE: DetailPanel + StatusBadge</span></h3>
+      <div class="detail-grid">
+        <div class="detail-field"><label>SKU</label><span>PSM8-30</span></div>
+        <div class="detail-field"><label>Preço</label><span>R$ 0,45</span></div>
+        <div class="detail-field"><label>Custo</label><span>R$ 0,18</span></div>
+        <div class="detail-field"><label>Margem</label><span style="color:#38a169;">150%</span></div>
+        <div class="detail-field"><label>Estoque</label><span>1.250 un</span></div>
+        <div class="detail-field"><label>Mínimo</label><span>200 un</span></div>
+        <div class="detail-field"><label>NCM</label><span>7318.15.00</span></div>
+        <div class="detail-field"><label>Categoria</label><span>Fixação</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 3: FORM — CREATE/EDIT (Modal)                        ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="section-sep"></div>
+<div class="view-title" style="margin-left:24px;">View 3 — Form: Criar Pedido de Venda (Modal)</div>
+
+<div style="max-width:1200px; margin:0 auto 40px;">
+  <div class="modal-overlay">
+    <p class="annotation" style="text-align:center;">Overlay escurecido (backdrop) <span class="badge badge-reuse">REUSE: Modal</span></p>
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Novo Pedido de Venda</h3>
+        <span style="cursor:pointer; font-size:16px; color:#999;">✕</span>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Cliente *</label>
+            <input placeholder="Buscar cliente..." />
+          </div>
+          <div class="form-field">
+            <label>Condição de pagamento</label>
+            <select><option>À vista</option><option>30 dias</option></select>
+          </div>
+          <div class="form-field">
+            <label>Depósito</label>
+            <select><option>Depósito Principal</option></select>
+          </div>
+          <div class="form-field">
+            <label>Vendedor</label>
+            <select><option>João Silva</option></select>
+          </div>
+        </div>
+        <p class="annotation">↑ <span class="badge badge-reuse">REUSE: Select, FormField</span></p>
+
+        <h4 style="margin:16px 0 8px; font-size:13px;">Itens do pedido</h4>
+        <table class="data-table" style="margin-bottom:8px;">
+          <thead><tr><th>Produto</th><th>Qtd</th><th>Preço</th><th>Desconto</th><th>Subtotal</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="name">Parafuso M8x30</td>
+              <td style="width:60px;"><input style="width:50px;padding:4px;font-size:12px;border:1px solid #ddd;border-radius:4px;" value="100" /></td>
+              <td>R$ 0,45</td>
+              <td style="width:70px;"><input style="width:60px;padding:4px;font-size:12px;border:1px solid #ddd;border-radius:4px;" value="0" /></td>
+              <td><strong>R$ 45,00</strong></td>
+              <td><button class="btn btn-ghost btn-sm" style="color:#c44;">✕</button></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid #eee; margin-top:8px;">
+          <span style="font-size:12px; color:#888;">1 item · 100 unidades</span>
+          <strong style="font-size:15px;">Total: R$ 45,00</strong>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary">Confirmar Pedido</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 4: CONFIRM DIALOG                                    ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="section-sep"></div>
+<div class="view-title" style="margin-left:24px;">View 4 — Confirm Dialog (Destructive Action)</div>
+
+<div style="max-width:1200px; margin:0 auto 40px;">
+  <div class="modal-overlay">
+    <div class="modal" style="max-width:380px;">
+      <div class="modal-header">
+        <h3>Confirmar ação <span class="badge badge-reuse">REUSE: ConfirmDialog</span></h3>
+        <span style="cursor:pointer; font-size:16px; color:#999;">✕</span>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:13px; color:#555;">Estorna os valores e devolve itens ao estoque. Confirma?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost">Cancelar</button>
+        <button class="btn btn-primary" style="background:#c44;">Confirmar estorno</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Legend -->
+<div style="max-width:1200px; margin:0 auto 60px; padding:20px; background:#fff; border:1px solid #e0e0e0; border-radius:8px;">
+  <h3 style="font-size:14px; margin-bottom:12px;">Legenda de componentes</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:12px;">
+    <span><span class="badge badge-reuse">REUSE</span> = Componente existente reutilizado</span>
+    <span><span class="badge badge-new">NEW</span> = Componente novo a ser criado</span>
+  </div>
+  <p style="margin-top:12px; font-size:12px; color:#888;">
+    <strong>Option 1 — Refined Classic:</strong> Sidebar colapsável com ícones + texto, grupos visíveis, favoritos fixáveis.
+    Topbar com breadcrumbs + busca global + notificações + avatar.
+    Módulos usam PageHeader → Tabs → DataTable com DetailPanel (master-detail) lateral.
+    Density balanced (padding confortável, hierarquia clara).
+    <strong>100% baseada em componentes existentes</strong> — zero componentes novos necessários.
+  </p>
+</div>
+
+</body>
+</html>

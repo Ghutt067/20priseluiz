@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VinteEnterprise — Wireframe Option 2: Workspace Hub</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #333; font-size: 13px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; vertical-align: middle; margin-left: 6px; letter-spacing: 0.3px; }
+  .badge-reuse { background: #c6f6d5; color: #276749; }
+  .badge-new { background: #feebc8; color: #9c4221; }
+  .wireframe-label { text-align: center; padding: 18px 0 10px; font-size: 20px; font-weight: 700; color: #555; border-bottom: 2px dashed #ccc; margin-bottom: 24px; }
+  .view-title { font-size: 15px; font-weight: 700; color: #666; margin: 32px 0 12px; padding: 6px 12px; background: #e8e8e8; border-radius: 6px; display: inline-block; }
+  .annotation { font-size: 11px; color: #888; font-style: italic; margin: 4px 0 8px; }
+
+  /* ── SHELL ── */
+  .shell { display: grid; grid-template-columns: 48px 1fr; height: 700px; border: 2px solid #bbb; border-radius: 10px; overflow: hidden; background: #fff; margin: 0 auto 40px; max-width: 1200px; }
+  .shell.expanded { grid-template-columns: 220px 1fr; }
+
+  /* Icon Rail Sidebar */
+  .icon-rail { background: #111827; display: flex; flex-direction: column; align-items: center; padding: 12px 0; gap: 2px; overflow-y: auto; }
+  .icon-rail .rail-logo { width: 32px; height: 32px; background: #6c63ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .icon-rail .rail-item { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; color: #6b7280; cursor: pointer; transition: all 0.15s; }
+  .icon-rail .rail-item:hover { background: #1f2937; color: #d1d5db; }
+  .icon-rail .rail-item.active { background: #6c63ff22; color: #6c63ff; }
+  .icon-rail .rail-sep { width: 24px; height: 1px; background: #374151; margin: 8px 0; }
+  .icon-rail .rail-bottom { margin-top: auto; }
+
+  /* Expanded sidebar (hover state) */
+  .expanded-sidebar { background: #111827; color: #d1d5db; display: flex; flex-direction: column; overflow-y: auto; }
+  .expanded-sidebar .exp-logo { padding: 14px 16px; font-size: 14px; font-weight: 700; color: #fff; border-bottom: 1px solid #1f2937; display: flex; align-items: center; gap: 10px; }
+  .expanded-sidebar .exp-logo .dot { width: 28px; height: 28px; background: #6c63ff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 12px; font-weight: 700; }
+  .expanded-sidebar .exp-recent { padding: 12px 16px 6px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.8px; }
+  .expanded-sidebar .exp-link { display: flex; align-items: center; gap: 10px; padding: 8px 16px; font-size: 13px; color: #9ca3af; cursor: pointer; }
+  .expanded-sidebar .exp-link:hover { background: #1f2937; color: #e5e7eb; }
+  .expanded-sidebar .exp-link.active { color: #fff; background: #6c63ff15; border-left: 3px solid #6c63ff; }
+  .expanded-sidebar .exp-link .icon { font-size: 15px; width: 20px; text-align: center; }
+  .expanded-sidebar .exp-group { padding: 14px 16px 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; color: #4b5563; letter-spacing: 0.8px; }
+
+  /* Content area */
+  .content { display: flex; flex-direction: column; overflow: hidden; }
+  .topbar { display: flex; align-items: center; padding: 0 20px; height: 48px; border-bottom: 1px solid #e5e7eb; background: #fff; flex-shrink: 0; gap: 12px; }
+  .topbar-module { font-size: 15px; font-weight: 700; color: #111827; }
+  .topbar-actions { display: flex; gap: 8px; margin-left: auto; align-items: center; }
+  .spotlight { padding: 7px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 12px; width: 260px; background: #f9fafb; color: #6b7280; }
+  .topbar-avatar { width: 28px; height: 28px; border-radius: 50%; background: #e5e7eb; }
+
+  .main { flex: 1; overflow-y: auto; padding: 20px; }
+
+  /* ── WIDGET GRID ── */
+  .widget-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+  .widget { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; min-height: 120px; }
+  .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .widget-header h3 { font-size: 13px; font-weight: 600; color: #374151; }
+  .widget-header .link { font-size: 11px; color: #6c63ff; cursor: pointer; }
+  .widget .big-number { font-size: 28px; font-weight: 700; color: #111827; }
+  .widget .sub { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+  .widget .mini-list { font-size: 12px; }
+  .widget .mini-list-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #f3f4f6; }
+  .widget .mini-chart { height: 50px; background: #f9fafb; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #d1d5db; font-size: 11px; margin-top: 8px; }
+  .widget.span2 { grid-column: span 2; }
+  .widget.danger .big-number { color: #dc2626; }
+  .widget.success .big-number { color: #16a34a; }
+  .widget.warning .big-number { color: #d97706; }
+
+  /* ── SPLIT PANE MODULE ── */
+  .split-pane { display: grid; grid-template-columns: 1fr 380px; gap: 0; height: 500px; border: 1px solid #e5e7eb; border-radius: 10px; overflow: hidden; }
+  .split-list { overflow-y: auto; border-right: 1px solid #e5e7eb; }
+  .split-detail { overflow-y: auto; background: #fafafa; padding: 16px; }
+  .split-list-header { padding: 12px 16px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 8px; }
+  .split-list-header input { flex: 1; padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 6px; font-size: 12px; }
+  .split-row { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #f3f4f6; cursor: pointer; align-items: center; }
+  .split-row:hover { background: #f9fafb; }
+  .split-row.selected { background: #eff6ff; border-left: 3px solid #6c63ff; }
+  .split-row .name { font-weight: 600; font-size: 13px; color: #111827; }
+  .split-row .meta { font-size: 11px; color: #9ca3af; }
+  .split-row .amount { font-weight: 600; font-size: 13px; text-align: right; }
+
+  .detail-section { margin-bottom: 16px; }
+  .detail-section h4 { font-size: 12px; font-weight: 600; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .detail-kv { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .detail-kv .k { font-size: 11px; color: #9ca3af; }
+  .detail-kv .v { font-size: 13px; color: #111827; font-weight: 500; }
+
+  /* Shared components */
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+  .status-active { background: #dcfce7; color: #166534; }
+  .status-pending { background: #fef9c3; color: #854d0e; }
+  .status-overdue { background: #fecaca; color: #991b1b; }
+  .tabs { display: flex; gap: 0; border-bottom: 2px solid #e5e7eb; margin-bottom: 16px; }
+  .tab { padding: 10px 16px; font-size: 13px; color: #9ca3af; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+  .tab.active { color: #111827; font-weight: 600; border-bottom-color: #6c63ff; }
+  .tab .count { background: #e5e7eb; color: #6b7280; font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-left: 4px; }
+  .btn { padding: 8px 16px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-primary { background: #6c63ff; color: #fff; }
+  .btn-ghost { background: transparent; border: 1px solid #e5e7eb; color: #6b7280; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* ── FORM IN DETAIL PANE ── */
+  .detail-form { display: flex; flex-direction: column; gap: 10px; }
+  .detail-form label { font-size: 11px; color: #6b7280; font-weight: 500; display: flex; flex-direction: column; gap: 3px; }
+  .detail-form input, .detail-form select { padding: 7px 10px; border: 1px solid #e5e7eb; border-radius: 5px; font-size: 12px; }
+
+  .section-sep { border-top: 2px dashed #ddd; margin: 40px 0 20px; padding-top: 16px; }
+</style>
+</head>
+<body>
+
+<div class="wireframe-label">Option 2: Workspace Hub <span class="badge badge-new">NEW PATTERNS</span></div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 1a: COLLAPSED SIDEBAR (icon-rail) + DASHBOARD        ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="view-title" style="margin-left:24px;">View 1a — Icon-Rail Sidebar (collapsed, 48px) + Widget Dashboard</div>
+
+<div class="shell">
+  <div class="icon-rail">
+    <div class="rail-logo">V</div>
+    <div class="rail-item active" title="Dashboard">📊</div>
+    <div class="rail-sep"></div>
+    <div class="rail-item" title="Vendas">🛒</div>
+    <div class="rail-item" title="Compras">📦</div>
+    <div class="rail-item" title="Estoque">🏭</div>
+    <div class="rail-sep"></div>
+    <div class="rail-item" title="Financeiro">💰</div>
+    <div class="rail-item" title="Fiscal">🧾</div>
+    <div class="rail-item" title="Contratos">📜</div>
+    <div class="rail-sep"></div>
+    <div class="rail-item" title="Serviços">🔧</div>
+    <div class="rail-item" title="CRM">🤝</div>
+    <div class="rail-item" title="PDV">🖥️</div>
+    <div class="rail-sep"></div>
+    <div class="rail-item" title="Frota">🚛</div>
+    <div class="rail-item" title="Produção">⚙️</div>
+    <div class="rail-item" title="WMS">📍</div>
+    <div class="rail-sep"></div>
+    <div class="rail-item rail-bottom" title="Configurações">⚙️</div>
+  </div>
+  <div class="content">
+    <div class="topbar">
+      <span class="topbar-module">Dashboard</span>
+      <span class="badge badge-new">NEW: Icon-Rail Sidebar</span>
+      <div class="topbar-actions">
+        <input class="spotlight" placeholder="⌘K  Buscar qualquer coisa..." readonly />
+        <span class="badge badge-new">NEW: Spotlight Search</span>
+        <div class="topbar-avatar"></div>
+      </div>
+    </div>
+    <div class="main">
+      <!-- Widget Grid Dashboard -->
+      <div class="widget-grid">
+        <div class="widget">
+          <div class="widget-header"><h3>Vendas hoje</h3><span class="link">→ Vendas</span></div>
+          <div class="big-number">12</div>
+          <div class="sub">R$ 4.820,00 faturado</div>
+          <div class="mini-chart">📊 mini sparkline</div>
+        </div>
+        <div class="widget danger">
+          <div class="widget-header"><h3>Inadimplência</h3><span class="link">→ Financeiro</span></div>
+          <div class="big-number">R$ 1.250</div>
+          <div class="sub">3 títulos vencidos</div>
+        </div>
+        <div class="widget success">
+          <div class="widget-header"><h3>Resultado</h3><span class="link">→ Relatórios</span></div>
+          <div class="big-number">R$ 12.400</div>
+          <div class="sub">R$ 45k rec. · R$ 32.6k desp.</div>
+        </div>
+        <div class="widget span2">
+          <div class="widget-header"><h3>Faturamento (7 dias)</h3></div>
+          <div style="height:60px;background:#f3f4f6;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#d1d5db;">📊 Bar chart SVG</div>
+        </div>
+        <div class="widget">
+          <div class="widget-header"><h3>Estoque baixo</h3><span class="link">→ Estoque</span></div>
+          <div class="big-number warning" style="color:#d97706;">8</div>
+          <div class="sub">produtos abaixo do mínimo</div>
+        </div>
+        <div class="widget">
+          <div class="widget-header"><h3>Pendências</h3></div>
+          <div class="mini-list">
+            <div class="mini-list-row"><span>14:30 Reunião ABC</span><span style="color:#9ca3af;">Agenda</span></div>
+            <div class="mini-list-row"><span>Título R$850 vencido</span><span style="color:#dc2626;">Financeiro</span></div>
+            <div class="mini-list-row"><span>Parafuso M8 — sem estoque</span><span style="color:#d97706;">Estoque</span></div>
+          </div>
+        </div>
+        <div class="widget">
+          <div class="widget-header"><h3>Atalhos</h3></div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button class="btn btn-primary btn-sm">Nova Venda</button>
+            <button class="btn btn-primary btn-sm">Nova Compra</button>
+            <button class="btn btn-primary btn-sm">PDV</button>
+            <button class="btn btn-ghost btn-sm">Cadastros</button>
+          </div>
+        </div>
+        <div class="widget">
+          <div class="widget-header"><h3>Log recente</h3></div>
+          <div class="mini-list">
+            <div class="mini-list-row"><span>Venda #1042</span><span style="color:#9ca3af;">João · 2m</span></div>
+            <div class="mini-list-row"><span>NF-e 000124</span><span style="color:#9ca3af;">Sistema · 15m</span></div>
+            <div class="mini-list-row"><span>OC-87 recebida</span><span style="color:#9ca3af;">Maria · 1h</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="annotation">↑ <span class="badge badge-new">NEW: Widget Grid Dashboard (drag-reorder)</span> — cada widget usa <span class="badge badge-reuse">REUSE: KpiCard</span> internamente</p>
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 1b: EXPANDED SIDEBAR (hover state, 220px)            ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="view-title" style="margin-left:24px;">View 1b — Expanded Sidebar (on hover, 220px)</div>
+
+<div class="shell expanded" style="height:400px;">
+  <div class="expanded-sidebar">
+    <div class="exp-logo"><div class="dot">V</div> VinteEnterprise</div>
+    <div class="exp-recent">Recentes</div>
+    <div class="exp-link active"><span class="icon">📊</span> Dashboard</div>
+    <div class="exp-link"><span class="icon">🛒</span> Vendas</div>
+    <div class="exp-link"><span class="icon">💰</span> Financeiro</div>
+    <div class="exp-group">Comercial</div>
+    <div class="exp-link"><span class="icon">🛒</span> Vendas</div>
+    <div class="exp-link"><span class="icon">📦</span> Compras</div>
+    <div class="exp-link"><span class="icon">🤝</span> CRM</div>
+    <div class="exp-group">Operação</div>
+    <div class="exp-link"><span class="icon">🏭</span> Estoque</div>
+    <div class="exp-link"><span class="icon">🔧</span> Serviços</div>
+    <div class="exp-link"><span class="icon">🖥️</span> PDV</div>
+    <p class="annotation" style="padding:8px 16px; color:#4b5563;">↑ <span class="badge badge-new">NEW: Hover-expand sidebar</span> com seção "Recentes"</p>
+  </div>
+  <div class="content">
+    <div class="topbar"><span class="topbar-module">Dashboard</span></div>
+    <div class="main" style="display:flex;align-items:center;justify-content:center;color:#9ca3af;">
+      (mesma widget grid do view 1a)
+    </div>
+  </div>
+</div>
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 2: SPLIT-PANE MODULE (Vendas)                        ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="section-sep"></div>
+<div class="view-title" style="margin-left:24px;">View 2 — Split-Pane Module: Vendas</div>
+
+<div style="max-width:1200px; margin:0 auto 40px; padding:20px; background:#fff; border:2px solid #bbb; border-radius:10px;">
+  <div class="tabs">
+    <div class="tab active">Pedidos <span class="count">12</span> <span class="badge badge-reuse">REUSE: Tabs</span></div>
+    <div class="tab">Cotações <span class="count">3</span></div>
+    <div class="tab">Atendimento</div>
+    <div class="tab">Histórico</div>
+  </div>
+
+  <div class="split-pane">
+    <!-- LIST SIDE -->
+    <div class="split-list">
+      <div class="split-list-header">
+        <input placeholder="Buscar pedido, cliente..." />
+        <button class="btn btn-primary btn-sm">+ Novo</button>
+      </div>
+      <div class="split-row selected">
+        <div>
+          <div class="name">Pedido #1042</div>
+          <div class="meta">João Silva · Hoje 14:32</div>
+        </div>
+        <span class="status status-pending">Pendente</span>
+        <span class="amount">R$ 1.250,00</span>
+      </div>
+      <div class="split-row">
+        <div>
+          <div class="name">Pedido #1041</div>
+          <div class="meta">Maria Santos · Hoje 11:15</div>
+        </div>
+        <span class="status status-active">Faturado</span>
+        <span class="amount">R$ 450,00</span>
+      </div>
+      <div class="split-row">
+        <div>
+          <div class="name">Pedido #1040</div>
+          <div class="meta">Pedro Almeida · Ontem</div>
+        </div>
+        <span class="status status-active">Faturado</span>
+        <span class="amount">R$ 2.800,00</span>
+      </div>
+      <div class="split-row">
+        <div>
+          <div class="name">Pedido #1039</div>
+          <div class="meta">Ana Costa · Ontem</div>
+        </div>
+        <span class="status status-overdue">Cancelado</span>
+        <span class="amount">R$ 380,00</span>
+      </div>
+    </div>
+
+    <!-- DETAIL SIDE -->
+    <div class="split-detail">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <div>
+          <h3 style="font-size:15px;">Pedido #1042</h3>
+          <span style="font-size:12px;color:#9ca3af;">João Silva · Hoje 14:32</span>
+        </div>
+        <span class="status status-pending">Pendente</span>
+      </div>
+      <p class="annotation"><span class="badge badge-new">NEW: Persistent Split-Pane</span></p>
+
+      <div class="detail-section">
+        <h4>Dados gerais</h4>
+        <div class="detail-kv">
+          <div><div class="k">Cliente</div><div class="v">João Silva</div></div>
+          <div><div class="k">Vendedor</div><div class="v">Carlos Souza</div></div>
+          <div><div class="k">Pagamento</div><div class="v">30 dias</div></div>
+          <div><div class="k">Depósito</div><div class="v">Principal</div></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Itens (3)</h4>
+        <div class="mini-list">
+          <div class="mini-list-row"><span>Parafuso M8x30 × 100</span><span>R$ 45,00</span></div>
+          <div class="mini-list-row"><span>Porca M8 × 100</span><span>R$ 28,00</span></div>
+          <div class="mini-list-row"><span>Arruela 5/16 × 200</span><span>R$ 24,00</span></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-weight:700;border-top:1px solid #e5e7eb;margin-top:4px;">
+          <span>Total</span><span>R$ 1.250,00</span>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button class="btn btn-primary btn-sm">Faturar</button>
+        <button class="btn btn-ghost btn-sm">Imprimir</button>
+        <button class="btn btn-ghost btn-sm" style="color:#dc2626;border-color:#dc2626;">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ╔══════════════════════════════════════════════════════════════╗ -->
+<!-- ║  VIEW 3: FORM IN DETAIL PANE (no modal)                    ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════╝ -->
+<div class="section-sep"></div>
+<div class="view-title" style="margin-left:24px;">View 3 — Form: Criar Pedido (no detail pane, sem modal)</div>
+
+<div style="max-width:1200px; margin:0 auto 40px; padding:20px; background:#fff; border:2px solid #bbb; border-radius:10px;">
+  <div class="split-pane" style="height:480px;">
+    <div class="split-list">
+      <div class="split-list-header">
+        <input placeholder="Buscar pedido..." />
+        <button class="btn btn-primary btn-sm" style="background:#16a34a;">+ Novo ✓</button>
+      </div>
+      <div class="split-row" style="opacity:0.5;"><div><div class="name">Pedido #1042</div></div><span class="status status-pending">Pendente</span><span class="amount">R$1.250</span></div>
+      <div class="split-row" style="opacity:0.5;"><div><div class="name">Pedido #1041</div></div><span class="status status-active">Faturado</span><span class="amount">R$450</span></div>
+    </div>
+    <div class="split-detail" style="background:#fff;">
+      <h3 style="font-size:14px;margin-bottom:14px;">Novo Pedido de Venda <span class="badge badge-new">NEW: Form in Detail Pane</span></h3>
+      <div class="detail-form">
+        <label>Cliente * <input placeholder="Buscar cliente..." /></label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <label>Pagamento <select><option>À vista</option><option>30 dias</option></select></label>
+          <label>Depósito <select><option>Principal</option></select></label>
+        </div>
+        <label>Vendedor <select><option>Carlos Souza</option></select></label>
+      </div>
+      <h4 style="margin:14px 0 6px;font-size:12px;color:#6b7280;">Itens</h4>
+      <div style="border:1px solid #e5e7eb;border-radius:6px;padding:8px;margin-bottom:8px;">
+        <div style="display:flex;gap:6px;align-items:center;font-size:12px;">
+          <input placeholder="Buscar produto..." style="flex:2;padding:6px 8px;border:1px solid #e5e7eb;border-radius:4px;font-size:12px;" />
+          <input value="100" style="width:50px;padding:6px;border:1px solid #e5e7eb;border-radius:4px;font-size:12px;text-align:center;" />
+          <span style="font-weight:600;">R$ 45,00</span>
+          <button class="btn btn-ghost btn-sm" style="color:#dc2626;padding:4px 8px;">✕</button>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;">
+        <span style="font-size:12px;color:#9ca3af;">1 item · Total: <strong style="color:#111827;">R$ 45,00</strong></span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost btn-sm">Cancelar</button>
+          <button class="btn btn-primary btn-sm">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Legend -->
+<div style="max-width:1200px; margin:0 auto 60px; padding:20px; background:#fff; border:1px solid #e0e0e0; border-radius:8px;">
+  <h3 style="font-size:14px; margin-bottom:12px;">Legenda de componentes</h3>
+  <div style="display:flex; flex-wrap:wrap; gap:16px; font-size:12px;">
+    <span><span class="badge badge-reuse">REUSE</span> = Componente existente reutilizado</span>
+    <span><span class="badge badge-new">NEW</span> = Componente novo a ser criado</span>
+  </div>
+  <p style="margin-top:12px; font-size:12px; color:#888;">
+    <strong>Option 2 — Workspace Hub:</strong> Sidebar icon-rail (48px) que expande ao hover (220px) com seção "Recentes".
+    Dashboard baseado em widget grid (drag-reorder).
+    Módulos usam split-pane persistente: lista à esquerda, detalhe/formulário à direita (sem modais para CRUD).
+    Spotlight search no topbar (⌘K).
+    <strong>Novos componentes:</strong> IconRailSidebar, WidgetGrid, SplitPane, SpotlightSearch.
+    <strong>Reutiliza:</strong> KpiCard, Tabs, StatusBadge, DataTable internamente.
+  </p>
+</div>
+
+</body>
+</html>

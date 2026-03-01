@@ -1,0 +1,209 @@
+/* ===== Söhne — Regular ===== */
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-Leicht-BF663d89cd4952e.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-Buch-BF663d89cd32e6a.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-Kraftig-BF663d89cd37e26.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-Halbfett-BF663d89cd2d67b.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-Dreiviertelfett-BF663d89ccc5f66.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== Söhne — Italic ===== */
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-BuchKursiv-BF663d89cd3e887.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne';
+  src: url('../assets/fonts/sohne-font-family/TestSohne-KraftigKursiv-BF663d89cd2bd4b.otf') format('opentype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ===== Söhne Mono ===== */
+
+@font-face {
+  font-family: 'Sohne Mono';
+  src: url('../assets/fonts/sohne-font-family/TestSohneMono-Buch-BF663d89cbcec64.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne Mono';
+  src: url('../assets/fonts/sohne-font-family/TestSohneMono-Kraftig-BF663d89cd2bd2d.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Sohne Mono';
+  src: url('../assets/fonts/sohne-font-family/TestSohneMono-Halbfett-BF663d89cc69f9d.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== Root ===== */
+
+:root {
+  font-family: 'Sohne', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light;
+
+  /*
+   * Brand palette source of truth.
+   * Update colors only here and reference them via CSS variables.
+   */
+
+  --bg: #E6E6E6;
+  --surface: #FFFFFF;
+  --text: #2B2B2B;
+  --muted: rgba(43, 43, 43, 0.72);
+  --accent: #E5BA41;
+  --accent-strong: #C4A96A;
+  /*
+   * Use this token for alpha variants in feature styles.
+   * Example: rgba(var(--accent-rgb), 0.08)
+   */
+  --accent-rgb: 229, 186, 65;
+  --border: rgba(43, 43, 43, 0.22);
+  --border-strong: rgba(43, 43, 43, 0.35);
+
+  --primary: var(--accent);
+  --primary-strong: var(--accent-strong);
+
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%232B2B2B'/%3E%3C/svg%3E");
+
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+code {
+  font-family: 'Sohne Mono', ui-monospace, SFMono-Regular, Menlo, Monaco,
+    Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
+
+/* ===== Native form reset ===== */
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+input,
+textarea {
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;
+}
+
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+/* ===== Scrollbar ===== */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(43, 43, 43, 0.18);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(43, 43, 43, 0.32);
+}

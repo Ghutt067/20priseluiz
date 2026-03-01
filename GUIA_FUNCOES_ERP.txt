@@ -1,0 +1,157 @@
+VinteEnterprise - Guia Pratico das Funcoes do ERP
+
+Objetivo deste arquivo
+- Explicar, de forma simples, para que serve cada funcao/modulo do sistema.
+- Servir como manual inicial para quem nunca usou ERP.
+
+Visao geral do fluxo da loja (base atual)
+1) Cliente escolhe/pergunta produto.
+2) Vendedor monta o pedido na tela de Vendas.
+3) Pedido e enviado para o caixa.
+4) Caixa faz o recebimento (PDV/financeiro, conforme operacao).
+
+--------------------------------------------------
+1. AUTENTICACAO, PERFIS E ACESSO
+--------------------------------------------------
+
+Cadastro (Sign-up)
+- Cria a conta da loja (Chefe/Administrador).
+- No cadastro: Nome da loja, e-mail e senha.
+
+Login
+- Cada usuario entra com e-mail e senha.
+- Pode ser Chefe ou funcionario (Vendedor, Estoquista, Financeiro).
+
+Perfis (roles)
+- Chefe: acesso total, equipe e configuracoes principais.
+- Vendedor: foco em vendas, cotacoes e relacionamento.
+- Estoquista: foco em estoque, compras e movimentacoes.
+- Financeiro: foco em contas, fiscal e conciliacao.
+
+Equipe (somente Chefe)
+- Cadastra funcionario com e-mail, senha e funcao.
+- Vincula automaticamente ao organization_id da loja.
+
+--------------------------------------------------
+2. MODULOS PRINCIPAIS (MENU)
+--------------------------------------------------
+
+Dashboard
+- Painel geral com visao rapida da operacao.
+- Indicadores e atalhos.
+
+Cadastros
+- Cadastro base do sistema.
+- Clientes, fornecedores, produtos e dados relacionados.
+
+Vendas
+- Tela de atendimento de balcão.
+- Busca inteligente de produtos (nome, codigo de barras, marca).
+- Carrinho visual com quantidade e desconto por item.
+- Desconto total do pedido.
+- Selecao de cliente por busca rapida.
+- Gera pedido para enviar ao caixa.
+- Tambem possui cotacao (orcamento) para cliente que nao vai pagar na hora.
+
+Compras
+- Registro de ordens de compra e recebimento.
+- Entrada de mercadoria.
+- Base para reposicao de estoque.
+
+Estoque
+- Controle de quantidade por deposito.
+- Movimentacoes e ajustes.
+- Apoio a inventario, transferencias e operacao logistica.
+
+Financeiro
+- Contas a pagar e a receber.
+- Fluxo financeiro do negocio.
+- Acompanhamento de valores e vencimentos.
+
+Relatorios e Conciliacao
+- Relatorios gerenciais.
+- Apoio para conferencia de movimentacoes e desempenho.
+
+Fiscal
+- Operacoes fiscais e geracao de documentos fiscais.
+- Estruturas para NF-e/NFC-e e rotinas fiscais.
+
+Servicos
+- Ordem de servico e acompanhamento operacional/financeiro de servicos.
+
+CRM e Agenda
+- Relacionamento com cliente.
+- Agenda diaria, pos-venda, contatos e acompanhamento comercial.
+
+PDV
+- Frente de caixa.
+- Registro de venda em caixa, sessao de caixa e fechamento.
+
+Pessoas
+- Gestao de pessoas e dados administrativos (acesso principal do Chefe).
+
+Integracoes
+- Ponto para integrar com servicos externos (bancos, gateways, etc.).
+
+Equipe
+- Gestao de funcionarios (adicionar e organizar acessos por perfil).
+
+--------------------------------------------------
+3. COMO USAR COTACAO VS PEDIDO (DUVIDA COMUM)
+--------------------------------------------------
+
+Pedido de venda
+- Use quando o cliente ja decidiu comprar.
+- Fluxo: vendedor monta -> envia ao caixa.
+
+Cotacao (orcamento)
+- Use quando o cliente quer apenas proposta/preco.
+- Pode converter depois para pedido.
+
+--------------------------------------------------
+4. REGRAS IMPORTANTES DE SEGURANCA E DADOS
+--------------------------------------------------
+
+Multiempresa (organization_id)
+- Cada loja enxerga somente os proprios dados.
+- Isolamento por RLS no banco.
+
+Permissoes por perfil
+- O menu e as rotas respeitam o perfil logado.
+- Exemplo: funcionario sem permissao nao acessa modulo restrito.
+
+--------------------------------------------------
+5. SITUACAO ATUAL E EVOLUCAO
+--------------------------------------------------
+
+O sistema ja possui base funcional completa para operacao ERP modular:
+- autenticacao por perfis,
+- vendas/cotacao,
+- estoque/compras,
+- financeiro/fiscal,
+- PDV e CRM.
+
+Evolucao planejada:
+- criar "modos de operacao por tipo de loja" (fluxos configuraveis).
+- Exemplo: loja com caixa separado (balcao -> caixa) vs loja com pagamento no mesmo ponto.
+
+--------------------------------------------------
+6. RESUMO RAPIDO (PARA TREINAR EQUIPE)
+--------------------------------------------------
+
+Se voce for vendedor:
+- Entre em Vendas, busque produto, monte itens, selecione cliente e gere pedido.
+
+Se voce for caixa:
+- Receba o pedido no fluxo de caixa/PDV e conclua pagamento.
+
+Se voce for estoquista:
+- Controle entradas/saidas/transferencias e apoio a inventario.
+
+Se voce for financeiro:
+- Controle contas, relatorios e rotinas fiscais.
+
+Se voce for chefe:
+- Configure equipe, acompanhe indicadores e tenha visao total da loja.
+
+Fim do guia.
