@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import {
   fetchContractsPaged,
   createContract,
@@ -42,6 +43,7 @@ export function ContratosPage() {
   const [customerId, setCustomerId] = useState('')
   const [customerQuery, setCustomerQuery] = useState('')
   const [customerResults, setCustomerResults] = useState<Array<{ id: string; name: string }>>([])
+  const { mounted: custDropMounted, exiting: custDropExiting } = useAnimatedPresence(customerResults.length > 0, 180)
   const [items, setItems] = useState<ContractItem[]>([{ description: '', quantity: '1', unitPrice: '0' }])
 
   const loadContracts = useCallback(async () => {
@@ -157,8 +159,8 @@ export function ContratosPage() {
           Cliente (opcional)
           <div style={{ position: 'relative' }}>
             <input value={customerQuery} onChange={(e) => void searchCustomers(e.target.value)} placeholder="Buscar cliente..." />
-            {customerResults.length > 0 && (
-              <div className="customer-dropdown" style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10 }}>
+            {custDropMounted && (
+              <div className={`customer-dropdown ${custDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`} style={{ position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10 }}>
                 {customerResults.map((c) => (
                   <button key={c.id} type="button" className="customer-result" onClick={() => {
                     setCustomerId(c.id)

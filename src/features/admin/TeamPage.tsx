@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import { supabase } from '../../lib/supabase'
 import {
   DateInput, NumericInput, Select, StatusBadge, Tabs, TabPanel,
@@ -79,6 +80,7 @@ export function TeamPage() {
 
   const [prodResults, setProdResults] = useState<Array<{ id: string; name: string; price: number }>>([])
   const [prodDropOpen, setProdDropOpen] = useState(false)
+  const { mounted: prodDropMounted, exiting: prodDropExiting } = useAnimatedPresence(prodDropOpen && prodResults.length > 0, 180)
   const prodTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const flash = (m: string) => { setMsg(m); setTimeout(() => setMsg(''), 3000) }
@@ -348,8 +350,8 @@ export function TeamPage() {
                   <input value={loanForm.productQuery} placeholder="Buscar produto..." onChange={(e) => { setLoanForm((s) => ({ ...s, productQuery: e.target.value })); searchProd(e.target.value) }}
                     onFocus={() => { if (prodResults.length > 0) setProdDropOpen(true) }}
                     onBlur={() => setTimeout(() => setProdDropOpen(false), 200)} />
-                  {prodDropOpen && prodResults.length > 0 && (
-                    <div className="pdv-search-dropdown">
+                  {prodDropMounted && (
+                    <div className={`pdv-search-dropdown ${prodDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                       {prodResults.map((p) => (
                         <button key={p.id} type="button" className="pdv-search-result" onMouseDown={() => {
                           setLoanForm((s) => ({ ...s, productId: p.id, productQuery: p.name }))

@@ -28,7 +28,7 @@ router.get('/wms/locations', async (req, res) => {
       const cnt = await c.query<{ total: number }>(
         `select count(*)::int as total from warehouse_locations wl
          where wl.organization_id=$1 and ($2='' or wl.warehouse_id::text=$2)
-           and ($3='' or wl.code ilike $4 or wl.aisle ilike $4)`,
+           and ($3='' or smart_search_match(lower(unaccent(wl.code)), $3, $4) or smart_search_match(lower(unaccent(wl.aisle)), $3, $4))`,
         [orgId, warehouseId, query, like])
       const rows = await c.query(
         `select wl.id, wl.warehouse_id as "warehouseId", w.name as "warehouseName",
@@ -36,7 +36,7 @@ router.get('/wms/locations', async (req, res) => {
          from warehouse_locations wl
          join warehouses w on w.id=wl.warehouse_id and w.organization_id=wl.organization_id
          where wl.organization_id=$1 and ($2='' or wl.warehouse_id::text=$2)
-           and ($3='' or wl.code ilike $4 or wl.aisle ilike $4)
+           and ($3='' or smart_search_match(lower(unaccent(wl.code)), $3, $4) or smart_search_match(lower(unaccent(wl.aisle)), $3, $4))
          order by wl.code asc limit $5 offset $6`,
         [orgId, warehouseId, query, like, limit, offset])
       return { rows: rows.rows, total: Number(cnt.rows[0]?.total ?? 0) }

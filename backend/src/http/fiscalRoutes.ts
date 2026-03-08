@@ -113,9 +113,9 @@ router.get('/emitters', async (request, response) => {
          where fe.organization_id = $1
            and (
              $2 = ''
-             or fe.name ilike $3
-             or fe.cnpj ilike $3
-             or coalesce(fe.city, '') ilike $3
+             or smart_search_match(lower(unaccent(fe.name)), $2, $3)
+             or smart_search_match(lower(unaccent(fe.cnpj)), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fe.city, ''))), $2, $3)
            )`,
         [organizationId, query, likeQuery],
       )
@@ -143,9 +143,9 @@ router.get('/emitters', async (request, response) => {
          where fe.organization_id = $1
            and (
              $2 = ''
-             or fe.name ilike $3
-             or fe.cnpj ilike $3
-             or coalesce(fe.city, '') ilike $3
+             or smart_search_match(lower(unaccent(fe.name)), $2, $3)
+             or smart_search_match(lower(unaccent(fe.cnpj)), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fe.city, ''))), $2, $3)
            )
          order by fe.is_default desc, fe.created_at desc
          limit $4
@@ -423,9 +423,9 @@ router.get('/documents', async (request, response) => {
            and ($3 = '' or fd.doc_type::text = $3)
            and (
              $4 = ''
-             or coalesce(fd.access_key, '') ilike $5
-             or coalesce(fd.number::text, '') ilike $5
-             or coalesce(recipient.name, '') ilike $5
+             or smart_search_match(lower(unaccent(coalesce(fd.access_key, ''))), $4, $5)
+             or smart_search_match(lower(coalesce(fd.number::text, '')), $4, $5)
+             or smart_search_match(lower(unaccent(coalesce(recipient.name, ''))), $4, $5)
            )`,
         [organizationId, status, docType, query, likeQuery],
       )
@@ -479,9 +479,9 @@ router.get('/documents', async (request, response) => {
            and ($3 = '' or fd.doc_type::text = $3)
            and (
              $4 = ''
-             or coalesce(fd.access_key, '') ilike $5
-             or coalesce(fd.number::text, '') ilike $5
-             or coalesce(recipient.name, '') ilike $5
+             or smart_search_match(lower(unaccent(coalesce(fd.access_key, ''))), $4, $5)
+             or smart_search_match(lower(coalesce(fd.number::text, '')), $4, $5)
+             or smart_search_match(lower(unaccent(coalesce(recipient.name, ''))), $4, $5)
            )
          order by coalesce(fd.issue_date, fd.created_at) desc, fd.created_at desc
          limit $6

@@ -631,6 +631,18 @@ export function fetchRecentQuotes(limit = 10) {
   >(`/quotes/recent?${params.toString()}`)
 }
 
+export type SalesAiChatMessage = {
+  role: 'user' | 'assistant'
+  content: string
+}
+
+export function sendSalesAiChat(input: { messages: SalesAiChatMessage[] }) {
+  return postJson<{ message: string; model: string | null; responseId: string | null }>(
+    '/ai/sales-chat',
+    input,
+  )
+}
+
 export function cancelQuote(quoteId: string, options?: { idempotencyKey?: string }) {
   return postJson<{ id: string; status: string }>(`/quotes/${quoteId}/cancel`, {}, {
     headers: idempotencyHeader('quote-cancel', options?.idempotencyKey),

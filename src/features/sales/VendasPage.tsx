@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type UIEvent } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type UIEvent } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import {
   DateInput,
   NumericInput,
@@ -8,10 +9,10 @@ import {
   getEstimatedTotalRowCount,
   PageHeader,
   Tabs,
-  TabPanel,
   PaymentComboBox,
 } from '../../components/ui'
 import { useStatusToast } from '../../hooks/useStatusToast'
+import { normalizeLookupQuery } from '../../lib/searchUtils'
 import {
   cancelQuote,
   completePickupForOrder,
@@ -28,6 +29,7 @@ import {
   fetchRecentQuotes,
   fetchSalesDefaults,
   invoiceSalesOrder,
+  sendSalesAiChat,
   searchProducts,
   searchCustomersPaged,
   updateSalesOrder,
@@ -40,6 +42,13 @@ import { fmtCurrency, fmtDateFull } from '../../lib/formatters'
 import { InlineCreateForm } from '../../components/InlineCreateForm'
 
 function createDraftNonce(prefix: 'order' | 'quote') {
+  if (globalThis.crypto !== undefined && 'randomUUID' in globalThis.crypto) {
+    return `${prefix}-${globalThis.crypto.randomUUID()}`
+  }
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function createTransientId(prefix: string) {
   if (globalThis.crypto !== undefined && 'randomUUID' in globalThis.crypto) {
     return `${prefix}-${globalThis.crypto.randomUUID()}`
   }
@@ -62,6 +71,7 @@ const fallbackProductImageDataUri =
 const LOOKUP_PAGE_SIZE = 5
 const PRODUCT_RESULT_ROW_HEIGHT = 62
 const CUSTOMER_RESULT_ROW_HEIGHT = 42
+const SALES_AI_HISTORY_LIMIT = 12
 
 type SalesCustomerLookup = {
   id: string
@@ -77,12 +87,10 @@ type SalesProductLookup = {
   stock_available: number
 }
 
-function normalizeLookupQuery(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
+type SalesAiChatEntry = {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
 }
 
 function mergeLookupItemsById<T extends { id: string }>(
@@ -182,11 +190,13 @@ export function VendasPage() {
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historySearch, setHistorySearch] = useState('')
   const [historyError, setHistoryError] = useState('')
+  const [historyExpanded, setHistoryExpanded] = useState(false)
   const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
   const [orderDetailsCache, setOrderDetailsCache] = useState<Record<string, SalesOrderDetail>>({})
   const [quoteDetailsCache, setQuoteDetailsCache] = useState<Record<string, { items: { id: string; description: string; quantity: number }[] }>>({})
   const [expandingOrderId, setExpandingOrderId] = useState<string | null>(null)
   const historyAbortRef = useRef<AbortController | null>(null)
+  const historyEndRef = useRef<HTMLDivElement | null>(null)
   const historyRefreshRef = useRef(0)
 
   const loadHistory = useCallback(async (offset: number, append: boolean) => {
@@ -230,6 +240,24 @@ export function VendasPage() {
     void loadHistory(historyOffset, true)
     return () => { historyAbortRef.current?.abort() }
   }, [activeView, historyOffset, loadHistory])
+
+  // Infinite scroll: observe sentinel when expanded
+  useEffect(() => {
+    if (!historyExpanded) return
+    const sentinel = historyEndRef.current
+    if (!sentinel) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          observer.disconnect()
+          setHistoryOffset((o) => o + HISTORY_PAGE_SIZE)
+        }
+      },
+      { threshold: 0 },
+    )
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [historyExpanded, historyOrders.length])
 
   const toggleExpandOrder = useCallback(async (orderId: string) => {
     if (expandedOrderId === orderId) {
@@ -362,6 +390,8 @@ export function VendasPage() {
   const [creatingOrder, setCreatingOrder] = useState(false)
   const [orderSuccess, setOrderSuccess] = useState(false)
   const orderSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const [quoteSuccess, setQuoteSuccess] = useState(false)
+  const quoteSuccessTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [savingQuote, setSavingQuote] = useState(false)
   const [convertingQuote, setConvertingQuote] = useState(false)
   const [quoteRowBusyId, setQuoteRowBusyId] = useState<string | null>(null)
@@ -377,6 +407,21 @@ export function VendasPage() {
   const [quoteId, setQuoteId] = useState('')
   const [showCustomerSelect, setShowCustomerSelect] = useState(false)
   const [showQuoteCustomerSelect, setShowQuoteCustomerSelect] = useState(false)
+  const { mounted: customerWrapperMounted, exiting: customerWrapperExiting } = useAnimatedPresence(showCustomerSelect, 180)
+  const { mounted: quoteCustomerWrapperMounted, exiting: quoteCustomerWrapperExiting } = useAnimatedPresence(showQuoteCustomerSelect, 180)
+
+  // Auto-focus customer inputs when wrapper appears
+  useEffect(() => {
+    if (customerWrapperMounted && !customerWrapperExiting) {
+      customerSearchRef.current?.focus()
+    }
+  }, [customerWrapperMounted, customerWrapperExiting])
+
+  useEffect(() => {
+    if (quoteCustomerWrapperMounted && !quoteCustomerWrapperExiting) {
+      quoteCustomerSearchRef.current?.focus()
+    }
+  }, [quoteCustomerWrapperMounted, quoteCustomerWrapperExiting])
   const [customerQuery, setCustomerQuery] = useState('')
   const [quoteCustomerQuery, setQuoteCustomerQuery] = useState('')
   const [customerResults, setCustomerResults] = useState<SalesCustomerLookup[]>([])
@@ -413,12 +458,137 @@ export function VendasPage() {
   const [selectedQuoteResultIndex, setSelectedQuoteResultIndex] = useState(0)
   const [selectedCartIndex, setSelectedCartIndex] = useState(0)
   const [selectedQuoteCartIndex, setSelectedQuoteCartIndex] = useState(0)
-  const [orderDiscountMode, setOrderDiscountMode] = useState<'percent' | 'value'>('value')
+  const [orderDiscountMode, setOrderDiscountMode] = useState<'percent' | 'value'>('percent')
   const [orderDiscountValue, setOrderDiscountValue] = useState(0)
-  const [quoteDiscountMode, setQuoteDiscountMode] = useState<'percent' | 'value'>('value')
+  const [quoteDiscountMode, setQuoteDiscountMode] = useState<'percent' | 'value'>('percent')
   const [quoteDiscountValue, setQuoteDiscountValue] = useState(0)
   const [orderDraftNonce, setOrderDraftNonce] = useState(() => createDraftNonce('order'))
   const [quoteDraftNonce, setQuoteDraftNonce] = useState(() => createDraftNonce('quote'))
+  const [aiChatMessages, setAiChatMessages] = useState<SalesAiChatEntry[]>([])
+  const [aiChatInput, setAiChatInput] = useState('')
+  const [aiChatError, setAiChatError] = useState('')
+  const [aiChatLoading, setAiChatLoading] = useState(false)
+  const aiChatLogRef = useRef<HTMLDivElement | null>(null)
+  const salesPanelShellRef = useRef<HTMLDivElement | null>(null)
+  const salesPanelContentRef = useRef<HTMLDivElement | null>(null)
+  const salesPanelAnimationFrameRef = useRef<number | null>(null)
+  const salesPanelAnimationTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const salesPanelPreviousHeightRef = useRef<number | null>(null)
+  const [salesPanelHeight, setSalesPanelHeight] = useState<number | null>(null)
+  const [salesPanelStretchDirection, setSalesPanelStretchDirection] = useState<'grow' | 'shrink' | null>(null)
+
+  useLayoutEffect(() => {
+    const contentEl = salesPanelContentRef.current
+    if (!contentEl) return
+
+    let shouldAnimateNextChange = true
+
+    const clearPendingAnimationState = () => {
+      if (salesPanelAnimationTimerRef.current) {
+        clearTimeout(salesPanelAnimationTimerRef.current)
+      }
+
+      salesPanelAnimationTimerRef.current = setTimeout(() => {
+        salesPanelAnimationTimerRef.current = null
+        setSalesPanelHeight(null)
+        setSalesPanelStretchDirection(null)
+      }, 380)
+    }
+
+    const updatePanelHeight = (rawHeight: number) => {
+      const nextHeight = Math.ceil(rawHeight)
+      const previousMeasuredHeight = salesPanelPreviousHeightRef.current
+
+      if (previousMeasuredHeight == null) {
+        salesPanelPreviousHeightRef.current = nextHeight
+        shouldAnimateNextChange = false
+        return
+      }
+
+      const currentShellHeight = Math.ceil(
+        salesPanelShellRef.current?.getBoundingClientRect().height ?? previousMeasuredHeight,
+      )
+
+      if (!shouldAnimateNextChange || Math.abs(currentShellHeight - nextHeight) < 2) {
+        salesPanelPreviousHeightRef.current = nextHeight
+
+        if (shouldAnimateNextChange) {
+          shouldAnimateNextChange = false
+          setSalesPanelHeight(null)
+          setSalesPanelStretchDirection(null)
+        }
+
+        return
+      }
+
+      shouldAnimateNextChange = false
+      salesPanelPreviousHeightRef.current = nextHeight
+      setSalesPanelStretchDirection(nextHeight > currentShellHeight ? 'grow' : 'shrink')
+      setSalesPanelHeight(currentShellHeight)
+
+      if (salesPanelAnimationFrameRef.current != null) {
+        cancelAnimationFrame(salesPanelAnimationFrameRef.current)
+      }
+
+      salesPanelAnimationFrameRef.current = requestAnimationFrame(() => {
+        salesPanelAnimationFrameRef.current = requestAnimationFrame(() => {
+          salesPanelAnimationFrameRef.current = null
+          setSalesPanelHeight(nextHeight)
+          clearPendingAnimationState()
+        })
+      })
+    }
+
+    updatePanelHeight(contentEl.getBoundingClientRect().height)
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        updatePanelHeight(entry.contentRect.height)
+      }
+    })
+
+    observer.observe(contentEl)
+
+    return () => {
+      observer.disconnect()
+
+      if (salesPanelAnimationFrameRef.current != null) {
+        cancelAnimationFrame(salesPanelAnimationFrameRef.current)
+        salesPanelAnimationFrameRef.current = null
+      }
+
+      if (salesPanelAnimationTimerRef.current) {
+        clearTimeout(salesPanelAnimationTimerRef.current)
+        salesPanelAnimationTimerRef.current = null
+      }
+    }
+  }, [activeView])
+
+  const handleChangeActiveView = useCallback((nextView: 'new' | 'quote' | 'history') => {
+    if (nextView === activeView) return
+
+    const currentShellHeight = salesPanelShellRef.current?.getBoundingClientRect().height
+
+    if (currentShellHeight != null && currentShellHeight > 0) {
+      const roundedHeight = Math.ceil(currentShellHeight)
+      salesPanelPreviousHeightRef.current = roundedHeight
+      setSalesPanelHeight(roundedHeight)
+    }
+
+    if (salesPanelAnimationFrameRef.current != null) {
+      cancelAnimationFrame(salesPanelAnimationFrameRef.current)
+      salesPanelAnimationFrameRef.current = null
+    }
+
+    if (salesPanelAnimationTimerRef.current) {
+      clearTimeout(salesPanelAnimationTimerRef.current)
+      salesPanelAnimationTimerRef.current = null
+    }
+
+    setSalesPanelStretchDirection(null)
+    setHistoryExpanded(false)
+    setActiveView(nextView)
+  }, [activeView])
 
   const orderSearchRef = useRef<HTMLInputElement | null>(null)
   const quoteSearchRef = useRef<HTMLInputElement | null>(null)
@@ -606,12 +776,21 @@ export function VendasPage() {
     )
   }, [historyOrders, recentQuotes])
 
+  const showSalesAiChat = activeView === 'new' || activeView === 'quote'
+
   const refreshWorkflow = useCallback(async (orderId: string, options?: { silent?: boolean }) => {
     const silent = options?.silent ?? false
-    if (!silent) setWorkflowBusy(true)
+    if (!silent) {
+      setWorkflowBusy(true)
+      setWorkflowStatus('Atualizando fluxo do pedido...')
+    }
+
     try {
       const workflow = await fetchSalesOrderWorkflow(orderId)
       setOrderWorkflow(workflow)
+      if (!silent) {
+        setWorkflowStatus(workflow.stageLabel)
+      }
       return workflow
     } catch (error) {
       if (!silent) {
@@ -654,6 +833,11 @@ export function VendasPage() {
     () => normalizeLookupQuery(quoteQuery),
     [quoteQuery],
   )
+
+  const { mounted: orderProductDropMounted, exiting: orderProductDropExiting } = useAnimatedPresence(!!normalizedOrderProductQuery && results.length > 0, 180)
+  const { mounted: quoteProductDropMounted, exiting: quoteProductDropExiting } = useAnimatedPresence(!!normalizedQuoteProductQuery && quoteResults.length > 0, 180)
+  const { mounted: orderCustomerDropMounted, exiting: orderCustomerDropExiting } = useAnimatedPresence(!!normalizedCustomerQuery, 180)
+  const { mounted: quoteCustomerDropMounted, exiting: quoteCustomerDropExiting } = useAnimatedPresence(!!normalizedQuoteCustomerQuery, 180)
 
   const orderProductEstimatedTotalRows = useMemo(
     () => getEstimatedTotalRowCount(results.length, resultsHasMore, LOOKUP_PAGE_SIZE),
@@ -1629,6 +1813,9 @@ export function VendasPage() {
       setQuoteReviewItems([])
       setQuoteDraftNonce(createDraftNonce('quote'))
       void refreshRecentQuotes()
+      setQuoteSuccess(true)
+      if (quoteSuccessTimerRef.current) clearTimeout(quoteSuccessTimerRef.current)
+      quoteSuccessTimerRef.current = setTimeout(() => setQuoteSuccess(false), 3000)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao criar cotação.'
       setQuoteStatus(message)
@@ -1754,15 +1941,71 @@ export function VendasPage() {
     )
   }
 
+  const handleSubmitAiChat = useCallback(async () => {
+    const content = aiChatInput.trim()
+    if (!content || aiChatLoading) return
+
+    const nextMessages: SalesAiChatEntry[] = [
+      ...aiChatMessages,
+      {
+        id: createTransientId('sales-ai-user'),
+        role: 'user',
+        content,
+      },
+    ]
+
+    setAiChatMessages(nextMessages)
+    setAiChatInput('')
+    setAiChatError('')
+    setAiChatLoading(true)
+
+    try {
+      const result = await sendSalesAiChat({
+        messages: nextMessages.slice(-SALES_AI_HISTORY_LIMIT).map((message) => ({
+          role: message.role,
+          content: message.content,
+        })),
+      })
+
+      const assistantReply = result.message.trim() || 'A IA não retornou conteúdo.'
+      setAiChatMessages((previous) => [
+        ...previous,
+        {
+          id: createTransientId('sales-ai-assistant'),
+          role: 'assistant',
+          content: assistantReply,
+        },
+      ])
+    } catch (error) {
+      setAiChatError(error instanceof Error ? error.message : 'Erro ao consultar a IA.')
+    } finally {
+      setAiChatLoading(false)
+    }
+  }, [aiChatInput, aiChatLoading, aiChatMessages])
+
+  useEffect(() => {
+    const element = aiChatLogRef.current
+    if (!element) return
+    element.scrollTop = element.scrollHeight
+  }, [aiChatMessages, aiChatLoading])
+
   return (
     <div className="page-grid">
       <PageHeader />
-      <Tabs
-        tabs={[{ key: 'new' as const, label: 'Novo Pedido' }, { key: 'quote' as const, label: 'Cotação' }, { key: 'history' as const, label: 'Histórico' }]}
-        active={activeView}
-        onChange={(k) => setActiveView(k as 'new' | 'quote' | 'history')}
-      />
-      <TabPanel active={activeView === 'new'}>
+      {!historyExpanded && (
+        <Tabs
+          tabs={[{ key: 'new' as const, label: 'Novo Pedido' }, { key: 'quote' as const, label: 'Cotação' }, { key: 'history' as const, label: 'Histórico' }]}
+          active={activeView}
+          onChange={(k) => handleChangeActiveView(k as 'new' | 'quote' | 'history')}
+        />
+      )}
+      <div
+        ref={salesPanelShellRef}
+        className={`sales-panel-shell${salesPanelStretchDirection ? ` sales-panel-shell-animating sales-panel-shell-${salesPanelStretchDirection}` : ''}`}
+        style={salesPanelHeight == null ? undefined : { height: `${salesPanelHeight}px` }}
+      >
+        <div ref={salesPanelContentRef} className="sales-panel-shell-content">
+      {activeView === 'new' && (
       <div className="card sales-panel">
         {orderSuccess && (
           <div className="sales-panel-success-overlay">
@@ -1792,8 +2035,8 @@ export function VendasPage() {
               }
             }}
           />
-          {normalizedOrderProductQuery && (
-            <div className="search-dropdown">
+          {orderProductDropMounted && (
+            <div className={`search-dropdown ${orderProductDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
               {results.length > 0 && (
                 <div
                   ref={orderResultsListRef}
@@ -1882,7 +2125,7 @@ export function VendasPage() {
                 <div className="discount-line">
                   <div className="input-group">
                     <Select
-                      value={item.discountMode ?? 'value'}
+                      value={item.discountMode ?? 'percent'}
                       options={[{ value: 'value', label: 'R$' }, { value: 'percent', label: '%' }]}
                       onChange={(v) =>
                         setCartItems((state) =>
@@ -1896,8 +2139,8 @@ export function VendasPage() {
                     />
                     <NumericInput
                       value={item.discountValue ?? 0}
-                      currency={(item.discountMode ?? 'value') === 'value'}
-                      decimals={(item.discountMode ?? 'value') === 'percent' ? 0 : undefined}
+                      currency={(item.discountMode ?? 'percent') === 'value'}
+                      decimals={(item.discountMode ?? 'percent') === 'percent' ? 0 : undefined}
                       onChange={(event) =>
                         setCartItems((state) =>
                           state.map((cart) =>
@@ -1963,16 +2206,16 @@ export function VendasPage() {
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 17H4M4 17L8 13M4 17L8 21M4 7H20M20 7L16 3M20 7L16 11" stroke="#E5BA41" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
-            {showCustomerSelect && (
-              <div className="customer-input-wrapper">
+            {customerWrapperMounted && (
+              <div className={`customer-input-wrapper ${customerWrapperExiting ? 'rubber-h-exit' : 'rubber-h-enter'}`}>
                 <input
                   ref={customerSearchRef}
                   value={customerQuery}
                   onChange={(event) => setCustomerQuery(event.target.value)}
                   placeholder="Buscar cliente"
                 />
-                {normalizedCustomerQuery && (
-                  <div className="customer-dropdown">
+                {orderCustomerDropMounted && (
+                  <div className={`customer-dropdown ${orderCustomerDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                     {inlineCreateTarget === 'order-customer' ? (
                       <InlineCreateForm
                         type="customer"
@@ -1988,7 +2231,10 @@ export function VendasPage() {
                           setCustomerResultsScrollTop(0)
                           customerResultsLoadMoreOffsetRef.current = null
                         }}
-                        onCancel={() => setInlineCreateTarget(null)}
+                        onCancel={() => {
+                          setInlineCreateTarget(null)
+                          setCustomerQuery('')
+                        }}
                       />
                     ) : (
                       <>
@@ -2056,7 +2302,16 @@ export function VendasPage() {
             disabled={!defaults || cartItems.length === 0 || creatingOrder}
             onClick={handleCreateOrder}
           >
-            {creatingOrder ? 'GERANDO...' : 'GERAR PEDIDO'}
+            {creatingOrder ? (
+              'GERANDO...'
+            ) : (
+              <>
+                GERAR PEDIDO
+                <svg width="16" height="16" viewBox="0 0 32 32" style={{ transform: 'rotate(90deg)', marginLeft: '8px', flexShrink: 0 }}>
+                  <path d="M29.9,28.6l-13-26c-0.3-0.7-1.4-0.7-1.8,0l-13,26c-0.2,0.4-0.1,0.8,0.2,1.1C2.5,30,3,30.1,3.4,29.9L16,25.1l12.6,4.9c0.1,0,0.2,0.1,0.4,0.1c0.3,0,0.5-0.1,0.7-0.3C30,29.4,30.1,28.9,29.9,28.6z" fill="#2B2B2B"/>
+                </svg>
+              </>
+            )}
           </button>
         </div>
 
@@ -2087,10 +2342,19 @@ export function VendasPage() {
         </div>
         </div>
       </div>
-      </TabPanel>
-
-      <TabPanel active={activeView === 'quote'}>
+      )}
+      {activeView === 'quote' && (
       <div className="card sales-panel">
+        {quoteSuccess && (
+          <div className="sales-panel-success-overlay">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="11" stroke="#E5BA41" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              <polyline points="6 13 9 16 17 8" stroke="#E5BA41" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            </svg>
+            <span className="sales-panel-success-label">Cotação Salva</span>
+          </div>
+        )}
+        <div className={`sales-panel-content${quoteSuccess ? ' sales-panel-content-hidden' : ''}`}>
         <div className="search-bar">
           <input
             ref={quoteSearchRef}
@@ -2104,8 +2368,8 @@ export function VendasPage() {
               }
             }}
           />
-          {normalizedQuoteProductQuery && (
-            <div className="search-dropdown">
+          {quoteProductDropMounted && (
+            <div className={`search-dropdown ${quoteProductDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
               {quoteResults.length > 0 && (
                 <div
                   ref={quoteResultsListRef}
@@ -2188,7 +2452,7 @@ export function VendasPage() {
                 <div className="discount-line">
                   <div className="input-group">
                     <Select
-                      value={item.discountMode ?? 'value'}
+                      value={item.discountMode ?? 'percent'}
                       options={[{ value: 'value', label: 'R$' }, { value: 'percent', label: '%' }]}
                       onChange={(v) =>
                         setQuoteItems((state) =>
@@ -2202,8 +2466,8 @@ export function VendasPage() {
                     />
                     <NumericInput
                       value={item.discountValue ?? 0}
-                      currency={(item.discountMode ?? 'value') === 'value'}
-                      decimals={(item.discountMode ?? 'value') === 'percent' ? 0 : undefined}
+                      currency={(item.discountMode ?? 'percent') === 'value'}
+                      decimals={(item.discountMode ?? 'percent') === 'percent' ? 0 : undefined}
                       onChange={(event) =>
                         setQuoteItems((state) =>
                           state.map((cart) =>
@@ -2285,16 +2549,16 @@ export function VendasPage() {
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 17H4M4 17L8 13M4 17L8 21M4 7H20M20 7L16 3M20 7L16 11" stroke="#E5BA41" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </button>
-            {showQuoteCustomerSelect && (
-              <div className="customer-input-wrapper">
+            {quoteCustomerWrapperMounted && (
+              <div className={`customer-input-wrapper ${quoteCustomerWrapperExiting ? 'rubber-h-exit' : 'rubber-h-enter'}`}>
                 <input
                   ref={quoteCustomerSearchRef}
                   value={quoteCustomerQuery}
                   onChange={(event) => setQuoteCustomerQuery(event.target.value)}
                   placeholder="Buscar cliente"
                 />
-                {normalizedQuoteCustomerQuery && (
-                  <div className="customer-dropdown">
+                {quoteCustomerDropMounted && (
+                  <div className={`customer-dropdown ${quoteCustomerDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                     {inlineCreateTarget === 'quote-customer' ? (
                       <InlineCreateForm
                         type="customer"
@@ -2310,7 +2574,10 @@ export function VendasPage() {
                           setQuoteCustomerResultsScrollTop(0)
                           quoteCustomerResultsLoadMoreOffsetRef.current = null
                         }}
-                        onCancel={() => setInlineCreateTarget(null)}
+                        onCancel={() => {
+                          setInlineCreateTarget(null)
+                          setQuoteCustomerQuery('')
+                        }}
                       />
                     ) : (
                       <>
@@ -2378,7 +2645,7 @@ export function VendasPage() {
             disabled={!defaults || quoteItems.length === 0 || savingQuote || convertingQuote}
             onClick={handleSaveQuote}
           >
-            {savingQuote ? 'SALVANDO...' : 'SALVAR COTAÇÃO'}
+            {savingQuote ? 'SALVANDO...' : 'SALVAR PEDIDO'}
           </button>
         </div>
 
@@ -2405,6 +2672,7 @@ export function VendasPage() {
           <button
             type="button"
             className="ghost"
+            style={{ width: '200px', flexShrink: 0 }}
             disabled={
               !quoteId ||
               savingQuote ||
@@ -2452,21 +2720,28 @@ export function VendasPage() {
             ))}
           </div>
         )}
-        
+        </div>
       </div>
-      </TabPanel>
-
-      <TabPanel active={activeView === 'history'}>
+      )}
+      {activeView === 'history' && (
         <div className="card sales-panel">
-          <div className="search-bar">
-            <input
-              value={historySearch}
-              onChange={(e) => { setHistorySearch(e.target.value); setHistoryOffset(0) }}
-              placeholder="Buscar por cliente ou produto..."
-            />
-          </div>
+          {historyExpanded && (
+            <div className="history-full-header">
+              <span>Histórico</span>
+              <button type="button" className="ghost" onClick={() => setHistoryExpanded(false)}>Voltar</button>
+            </div>
+          )}
+          {historyExpanded && (
+            <div className="search-bar">
+              <input
+                value={historySearch}
+                onChange={(e) => { setHistorySearch(e.target.value); setHistoryOffset(0) }}
+                placeholder="Buscar por cliente ou produto..."
+              />
+            </div>
+          )}
 
-          <div className="history-table-wrap">
+          <div className={`history-table-wrap${!historyExpanded ? ' history-preview' : ''}`}>
             <table className="history-table">
               <thead>
                 <tr>
@@ -2604,18 +2879,22 @@ export function VendasPage() {
               <p className="history-empty">Nenhum registro encontrado.</p>
             )}
             {historyLoading && <p className="history-loading">Carregando...</p>}
-            {!historyLoading && historyOrders.length < historyTotal && (
-              <button
-                type="button"
-                className="ghost history-load-more"
-                onClick={() => setHistoryOffset((o) => o + HISTORY_PAGE_SIZE)}
-              >
-                Carregar mais
-              </button>
+            {historyExpanded && !historyLoading && historyOrders.length < historyTotal && (
+              <div ref={historyEndRef} style={{ height: 1 }} />
             )}
           </div>
 
-          {editingOrder && (
+          {!historyExpanded && historyItems.length > 6 && (
+            <button
+              type="button"
+              className="ghost history-load-more"
+              onClick={() => setHistoryExpanded(true)}
+            >
+              Ver mais
+            </button>
+          )}
+
+          {historyExpanded && editingOrder && (
             <div className="card" style={{ marginTop: 12, padding: 16 }}>
               <h3>Editar Pedido #{editingOrder.id.slice(0, 8)}</h3>
               
@@ -2687,8 +2966,89 @@ export function VendasPage() {
             </div>
           )}
         </div>
-      </TabPanel>
+      )}
+        </div>
+      </div>
 
+      {showSalesAiChat && (
+        <div className="card sales-ai-chat">
+          <div className="sales-ai-chat-header">
+            <h3>Assistente de vendas</h3>
+          </div>
+
+          <div className="sales-ai-chat-body">
+            <div ref={aiChatLogRef} className="sales-ai-chat-log" role="log" aria-live="polite" aria-busy={aiChatLoading}>
+              {aiChatMessages.length === 0 && !aiChatLoading ? (
+                <div className="sales-ai-chat-empty">
+                  <p className="sales-ai-chat-empty-title">Faça uma pergunta para começar</p>
+                  <p className="sales-ai-chat-empty-text">Vendas, clientes, pedidos ou negociação.</p>
+                </div>
+              ) : (
+                aiChatMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`sales-ai-chat-message sales-ai-chat-message-${message.role}`}
+                  >
+                    <div className={`sales-ai-chat-bubble sales-ai-chat-bubble-${message.role}`}>
+                      {message.content}
+                    </div>
+                  </div>
+                ))
+              )}
+
+              {aiChatLoading && (
+                <div className="sales-ai-chat-message sales-ai-chat-message-assistant">
+                  <div className="sales-ai-chat-bubble sales-ai-chat-bubble-assistant sales-ai-chat-bubble-loading">
+                    <span className="sales-ai-chat-loading-dot" />
+                    <span className="sales-ai-chat-loading-dot" />
+                    <span className="sales-ai-chat-loading-dot" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="sales-ai-chat-compose">
+              <div className="sales-ai-chat-compose-row">
+                <textarea
+                  aria-label="Mensagem para o assistente de vendas"
+                  rows={1}
+                  value={aiChatInput}
+                  onChange={(event) => {
+                    setAiChatInput(event.target.value)
+                    const el = event.target
+                    el.style.height = 'auto'
+                    el.style.height = `${el.scrollHeight}px`
+                  }}
+                  placeholder="Pergunte sobre vendas, clientes ou pedidos..."
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                      event.preventDefault()
+                      void handleSubmitAiChat()
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="action-primary sales-ai-chat-send"
+                  disabled={aiChatLoading || !aiChatInput.trim()}
+                  onClick={() => void handleSubmitAiChat()}
+                  aria-label={aiChatLoading ? 'Enviando...' : 'Enviar'}
+                >
+                  {aiChatLoading ? (
+                    '...'
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 32 32">
+                      <path d="M29.9,28.6l-13-26c-0.3-0.7-1.4-0.7-1.8,0l-13,26c-0.2,0.4-0.1,0.8,0.2,1.1C2.5,30,3,30.1,3.4,29.9L16,25.1l12.6,4.9c0.1,0,0.2,0.1,0.4,0.1c0.3,0,0.5-0.1,0.7-0.3C30,29.4,30.1,28.9,29.9,28.6z" fill="#2B2B2B"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
+
+              {aiChatError && <p className="sales-ai-chat-error">{aiChatError}</p>}
+            </div>
+          </div>
+        </div>
+      )}
       {quickToast && <div className="quick-toast">{quickToast}</div>}
     </div>
   )

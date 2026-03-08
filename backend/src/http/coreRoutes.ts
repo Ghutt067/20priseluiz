@@ -1193,8 +1193,8 @@ router.get('/purchases/orders/search', async (request, response) => {
           and (
             $3 = ''
             or po.id::text ilike $4
-            or coalesce(s.name, '') ilike $4
-            or coalesce(w.name, '') ilike $4
+            or smart_search_match(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $3, $4)
+            or smart_search_match(coalesce(w.name_search, lower(unaccent(coalesce(w.name, '')))), $3, $4)
           )
         order by
           case
@@ -1203,6 +1203,10 @@ router.get('/purchases/orders/search', async (request, response) => {
             when po.status = 'received' then 2
             else 3
           end,
+          greatest(
+            smart_search_score(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $3, $4),
+            smart_search_score(coalesce(w.name_search, lower(unaccent(coalesce(w.name, '')))), $3, $4)
+          ) desc,
           po.created_at desc
         limit $5
         offset $6`,
@@ -1500,9 +1504,11 @@ router.get('/sales/orders', async (request, response) => {
       }
     }
     if (query) {
-      conditions.push(`(c.name ilike $${paramIndex} or so.id::text ilike $${paramIndex} or exists (select 1 from sales_order_items soi left join products p on p.id = soi.product_id where soi.sales_order_id = so.id and (p.name ilike $${paramIndex} or soi.description ilike $${paramIndex})))`)
-      params.push(`%${query}%`)
-      paramIndex++
+      const qi = paramIndex
+      const li = paramIndex + 1
+      conditions.push(`(smart_search_match(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $${qi}, $${li}) or so.id::text ilike $${li} or exists (select 1 from sales_order_items soi left join products p on p.id = soi.product_id where soi.sales_order_id = so.id and (smart_search_match(coalesce(p.name_search, lower(unaccent(coalesce(p.name, '')))), $${qi}, $${li}) or smart_search_match(lower(unaccent(coalesce(soi.description, ''))), $${qi}, $${li}))))`)
+      params.push(query, `%${query}%`)
+      paramIndex += 2
     }
     if (dateFrom) {
       conditions.push(`so.created_at >= $${paramIndex}::timestamptz`)
@@ -3095,9 +3101,9 @@ router.get('/stock/movements', async (request, response) => {
             and ($6 = '' or sm.occurred_at <= $6::timestamptz)
             and (
               $7 = ''
-              or p.name_search like unaccent($8)
-              or p.sku_search like unaccent($8)
-              or coalesce(sm.reason, '') ilike $8
+              or smart_search_match(p.name_search, $7, $8)
+              or smart_search_match(p.sku_search, $7, $8)
+              or smart_search_match(lower(unaccent(coalesce(sm.reason, ''))), $7, $8)
             )`,
         [organizationId, productId, warehouseId, movementType, from, to, query, likeQuery],
       )
@@ -3144,9 +3150,9 @@ router.get('/stock/movements', async (request, response) => {
           and ($6 = '' or sm.occurred_at <= $6::timestamptz)
           and (
             $7 = ''
-            or p.name_search like unaccent($8)
-            or p.sku_search like unaccent($8)
-            or coalesce(sm.reason, '') ilike $8
+            or smart_search_match(p.name_search, $7, $8)
+            or smart_search_match(p.sku_search, $7, $8)
+            or smart_search_match(lower(unaccent(coalesce(sm.reason, ''))), $7, $8)
           )
         order by sm.occurred_at desc, sm.id desc
         limit $9

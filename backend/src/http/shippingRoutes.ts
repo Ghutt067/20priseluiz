@@ -54,9 +54,9 @@ router.get('/shipping/shipments', async (request, response) => {
              $3 = ''
              or s.id::text = $3
              or coalesce(s.sales_order_id::text, '') = $3
-             or coalesce(c.name, '') ilike $4
-             or coalesce(s.carrier, '') ilike $4
-             or coalesce(s.tracking_code, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(s.carrier, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(s.tracking_code, ''))), $3, $4)
            )`,
         [organizationId, status, query, likeQuery],
       )
@@ -89,9 +89,9 @@ router.get('/shipping/shipments', async (request, response) => {
              $3 = ''
              or s.id::text = $3
              or coalesce(s.sales_order_id::text, '') = $3
-             or coalesce(c.name, '') ilike $4
-             or coalesce(s.carrier, '') ilike $4
-             or coalesce(s.tracking_code, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(s.carrier, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(s.tracking_code, ''))), $3, $4)
            )
          group by
            s.id,

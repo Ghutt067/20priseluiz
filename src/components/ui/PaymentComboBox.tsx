@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 
 const PAYMENT_OPTIONS = [
   'PIX',
@@ -32,7 +33,12 @@ export function PaymentComboBox({ value, onChange, style }: PaymentComboBoxProps
   const displayRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLSpanElement>(null)
 
-  const filtered = open
+  const showDropdown = open && (query
+    ? PAYMENT_OPTIONS.some((o) => o.toLowerCase().includes(query.toLowerCase()))
+    : true)
+  const { mounted: menuMounted, exiting: menuExiting } = useAnimatedPresence(showDropdown, 180)
+
+  const filtered = (open || menuMounted)
     ? (query
         ? PAYMENT_OPTIONS.filter((o) => o.toLowerCase().includes(query.toLowerCase()))
         : PAYMENT_OPTIONS)
@@ -118,8 +124,8 @@ export function PaymentComboBox({ value, onChange, style }: PaymentComboBoxProps
           </span>
         </div>
       )}
-      {open && filtered.length > 0 && (
-        <div className="payment-combobox-dropdown">
+      {menuMounted && filtered.length > 0 && (
+        <div className={`payment-combobox-dropdown ${menuExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
           {filtered.map((option, i) => (
             <button
               key={option}

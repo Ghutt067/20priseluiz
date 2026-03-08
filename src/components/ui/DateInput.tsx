@@ -21,11 +21,30 @@ function displayToIso(display: string): string {
   return `${yyyy}-${mm}-${dd}`
 }
 
+function clampSegment(segment: string, max: number): string {
+  if (segment.length === 0) return segment
+  const num = Number.parseInt(segment, 10)
+  if (Number.isNaN(num)) return segment
+  if (segment.length === 1) {
+    if (num > Math.floor(max / 10)) return String(max).slice(0, 1)
+    return segment
+  }
+  if (num > max) return String(max)
+  if (num === 0) return '01'
+  return segment
+}
+
 function applyMask(raw: string): string {
   const digits = raw.replaceAll(/\D/g, '').slice(0, 8)
-  if (digits.length <= 2) return digits
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`
+  if (digits.length === 0) return ''
+  let dd = digits.slice(0, 2)
+  dd = clampSegment(dd, 31)
+  if (digits.length <= 2) return dd
+  let mm = digits.slice(2, 4)
+  mm = clampSegment(mm, 12)
+  if (digits.length <= 4) return `${dd}/${mm}`
+  const yyyy = digits.slice(4, 8)
+  return `${dd}/${mm}/${yyyy}`
 }
 
 export function DateInput({ value, onChange, placeholder, onBlur, ...rest }: DateInputProps) {
@@ -36,6 +55,10 @@ export function DateInput({ value, onChange, placeholder, onBlur, ...rest }: Dat
     (event: ChangeEvent<HTMLInputElement>) => {
       const masked = applyMask(event.target.value)
       setDraft(masked)
+      if (masked === '') {
+        onChange({ target: { value: '' } })
+        return
+      }
       const iso = displayToIso(masked)
       if (iso) {
         onChange({ target: { value: iso } })
@@ -46,10 +69,19 @@ export function DateInput({ value, onChange, placeholder, onBlur, ...rest }: Dat
 
   const handleBlur = useCallback(
     (event: FocusEvent<HTMLInputElement>) => {
+      if (draft !== null) {
+        const digits = draft.replaceAll(/\D/g, '')
+        if (digits.length === 0) {
+          onChange({ target: { value: '' } })
+        } else if (digits.length < 8) {
+          // incomplete date — clear it
+          onChange({ target: { value: '' } })
+        }
+      }
       setDraft(null)
       onBlur?.(event)
     },
-    [onBlur],
+    [draft, onChange, onBlur],
   )
 
   return (

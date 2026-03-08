@@ -50,8 +50,8 @@ router.get('/labels', async (request, response) => {
            and (
              $3 = ''
              or l.id::text = $3
-             or coalesce(p.name, '') ilike $4
-             or coalesce(p.sku, '') ilike $4
+             or smart_search_match(coalesce(p.name_search, lower(unaccent(coalesce(p.name, '')))), $3, $4)
+             or smart_search_match(coalesce(p.sku_search, lower(unaccent(coalesce(p.sku, '')))), $3, $4)
            )`,
         [organizationId, status, query, likeQuery],
       )
@@ -75,8 +75,8 @@ router.get('/labels', async (request, response) => {
            and (
              $3 = ''
              or l.id::text = $3
-             or coalesce(p.name, '') ilike $4
-             or coalesce(p.sku, '') ilike $4
+             or smart_search_match(coalesce(p.name_search, lower(unaccent(coalesce(p.name, '')))), $3, $4)
+             or smart_search_match(coalesce(p.sku_search, lower(unaccent(coalesce(p.sku, '')))), $3, $4)
            )
          order by l.created_at desc
          limit $5

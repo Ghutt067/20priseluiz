@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import { Select, ConfirmDialog, Modal, PageHeader } from '../../components/ui'
 import {
   openPosSession,
@@ -78,6 +79,7 @@ export function PdvPage() {
   const [productQuery, setProductQuery] = useState('')
   const [productResults, setProductResults] = useState<Array<{ id: string; name: string; price: number; stock_available: number }>>([])
   const [productSearchOpen, setProductSearchOpen] = useState(false)
+  const { mounted: pdvDropMounted, exiting: pdvDropExiting } = useAnimatedPresence(productSearchOpen && productResults.length > 0, 180)
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -89,6 +91,7 @@ export function PdvPage() {
   const [customerId, setCustomerId] = useState('')
   const [customerQuery, setCustomerQuery] = useState('')
   const [customerResults, setCustomerResults] = useState<Array<{ id: string; name: string }>>([])
+  const { mounted: custDropMounted, exiting: custDropExiting } = useAnimatedPresence(customerResults.length > 0, 180)
   const [showCustomerLookup, setShowCustomerLookup] = useState(false)
   const customerTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -563,8 +566,8 @@ export function PdvPage() {
                 }
               }}
             />
-            {productSearchOpen && productResults.length > 0 && (
-              <div className="pdv-search-dropdown">
+            {pdvDropMounted && (
+              <div className={`pdv-search-dropdown ${pdvDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                 {productResults.map((p) => (
                   <button
                     key={p.id}
@@ -591,8 +594,8 @@ export function PdvPage() {
                 <label style={{ flex: 2, minWidth: 180 }}>
                   Nome do cliente
                   <input value={customerQuery} onChange={(e) => { setCustomerQuery(e.target.value); setCustomerName(e.target.value) }} placeholder="Buscar cliente..." />
-                  {customerResults.length > 0 && (
-                    <div style={{ border: '1px solid var(--border)', borderRadius: 6, marginTop: 2, maxHeight: 120, overflowY: 'auto' }}>
+                  {custDropMounted && (
+                    <div className={custDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'} style={{ border: '1px solid var(--border)', borderRadius: 6, marginTop: 2, maxHeight: 120 }}>
                       {customerResults.map((c) => (
                         <button key={c.id} type="button" className="pdv-search-result" style={{ width: '100%' }} onMouseDown={() => {
                           setCustomerId(c.id); setCustomerName(c.name); setCustomerQuery(c.name); setCustomerResults([])

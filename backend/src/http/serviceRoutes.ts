@@ -113,11 +113,11 @@ router.get('/services/orders', async (request, response) => {
            and (
              $3 = ''
              or so.id::text = $3
-             or coalesce(c.name, '') ilike $4
-             or coalesce(v.plate, '') ilike $4
-             or coalesce(v.brand, '') ilike $4
-             or coalesce(v.model, '') ilike $4
-             or coalesce(so.notes, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.plate, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.brand, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.model, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(so.notes, ''))), $3, $4)
            )`,
         [organizationId, status, query, likeQuery],
       )
@@ -173,11 +173,11 @@ router.get('/services/orders', async (request, response) => {
            and (
              $3 = ''
              or so.id::text = $3
-             or coalesce(c.name, '') ilike $4
-             or coalesce(v.plate, '') ilike $4
-             or coalesce(v.brand, '') ilike $4
-             or coalesce(v.model, '') ilike $4
-             or coalesce(so.notes, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.plate, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.brand, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.model, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(so.notes, ''))), $3, $4)
            )
          order by so.updated_at desc
          limit $5
@@ -357,11 +357,11 @@ router.get('/services/vehicles', async (request, response) => {
            and (
              $3 = ''
              or v.id::text = $3
-             or coalesce(v.plate, '') ilike $4
-             or coalesce(v.brand, '') ilike $4
-             or coalesce(v.model, '') ilike $4
-             or coalesce(v.vin, '') ilike $4
-             or coalesce(c.name, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(v.plate, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.brand, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.model, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.vin, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
            )`,
         [organizationId, customerId, query, likeQuery],
       )
@@ -388,11 +388,11 @@ router.get('/services/vehicles', async (request, response) => {
            and (
              $3 = ''
              or v.id::text = $3
-             or coalesce(v.plate, '') ilike $4
-             or coalesce(v.brand, '') ilike $4
-             or coalesce(v.model, '') ilike $4
-             or coalesce(v.vin, '') ilike $4
-             or coalesce(c.name, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(v.plate, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.brand, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.model, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(v.vin, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(c.name, ''))), $3, $4)
            )
          order by v.updated_at desc
          limit $5
@@ -437,9 +437,9 @@ router.get('/services/technicians', async (request, response) => {
            and (
              $3 = ''
              or t.id::text = $3
-             or coalesce(t.name, '') ilike $4
-             or coalesce(t.email, '') ilike $4
-             or coalesce(t.phone, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(t.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(t.email, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(t.phone, ''))), $3, $4)
            )`,
         [organizationId, active, query, likeQuery],
       )
@@ -458,9 +458,9 @@ router.get('/services/technicians', async (request, response) => {
            and (
              $3 = ''
              or t.id::text = $3
-             or coalesce(t.name, '') ilike $4
-             or coalesce(t.email, '') ilike $4
-             or coalesce(t.phone, '') ilike $4
+             or smart_search_match(lower(unaccent(coalesce(t.name, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(t.email, ''))), $3, $4)
+             or smart_search_match(lower(unaccent(coalesce(t.phone, ''))), $3, $4)
            )
          order by t.active desc, t.name asc
          limit $5

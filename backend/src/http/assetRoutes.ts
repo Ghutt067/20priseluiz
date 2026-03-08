@@ -29,7 +29,7 @@ router.get('/assets', async (req, res) => {
       const cnt = await c.query<{ total: number }>(
         `select count(*)::int as total from fixed_assets
          where organization_id=$1 and ($2='' or status=$2) and ($3='' or category=$3)
-           and ($4='' or name ilike $5 or asset_number ilike $5)`,
+           and ($4='' or smart_search_match(lower(unaccent(name)), $4, $5) or smart_search_match(lower(unaccent(asset_number)), $4, $5))`,
         [orgId, status, category, query, like])
       const rows = await c.query(
         `select id, name, category, asset_number as "assetNumber",
@@ -40,7 +40,7 @@ router.get('/assets', async (req, res) => {
                 status, notes, created_at as "createdAt"
          from fixed_assets
          where organization_id=$1 and ($2='' or status=$2) and ($3='' or category=$3)
-           and ($4='' or name ilike $5 or asset_number ilike $5)
+           and ($4='' or smart_search_match(lower(unaccent(name)), $4, $5) or smart_search_match(lower(unaccent(asset_number)), $4, $5))
          order by created_at desc limit $6 offset $7`,
         [orgId, status, category, query, like, limit, offset])
       return { rows: rows.rows, total: Number(cnt.rows[0]?.total ?? 0) }

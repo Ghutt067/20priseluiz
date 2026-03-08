@@ -104,10 +104,10 @@ router.get('/finance/accounts', async (request, response) => {
          where fa.organization_id = $1
            and (
              $2 = ''
-             or fa.name ilike $3
-             or coalesce(fa.bank_code, '') ilike $3
-             or coalesce(fa.agency, '') ilike $3
-             or coalesce(fa.account_number, '') ilike $3
+             or smart_search_match(lower(unaccent(fa.name)), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.bank_code, ''))), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.agency, ''))), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.account_number, ''))), $2, $3)
            )`,
         [organizationId, query, likeQuery],
       )
@@ -125,12 +125,15 @@ router.get('/finance/accounts', async (request, response) => {
          where fa.organization_id = $1
            and (
              $2 = ''
-             or fa.name ilike $3
-             or coalesce(fa.bank_code, '') ilike $3
-             or coalesce(fa.agency, '') ilike $3
-             or coalesce(fa.account_number, '') ilike $3
+             or smart_search_match(lower(unaccent(fa.name)), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.bank_code, ''))), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.agency, ''))), $2, $3)
+             or smart_search_match(lower(unaccent(coalesce(fa.account_number, ''))), $2, $3)
            )
-         order by fa.created_at desc
+         order by greatest(
+           smart_search_score(lower(unaccent(fa.name)), $2, $3),
+           smart_search_score(lower(unaccent(coalesce(fa.bank_code, ''))), $2, $3)
+         ) desc, fa.created_at desc
          limit $4
          offset $5`,
         [organizationId, query, likeQuery, limit, offset],
@@ -258,9 +261,9 @@ router.get('/finance/titles', async (request, response) => {
            and ($3 = '' or ft.status::text = $3)
            and (
              $4 = ''
-             or coalesce(ft.description, '') ilike $5
-             or coalesce(c.name, '') ilike $5
-             or coalesce(s.name, '') ilike $5
+             or smart_search_match(lower(unaccent(coalesce(ft.description, ''))), $4, $5)
+             or smart_search_match(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $4, $5)
+             or smart_search_match(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $4, $5)
            )`,
         [organizationId, titleType, status, query, likeQuery],
       )
@@ -297,12 +300,16 @@ router.get('/finance/titles', async (request, response) => {
            and ($3 = '' or ft.status::text = $3)
            and (
              $4 = ''
-             or coalesce(ft.description, '') ilike $5
-             or coalesce(c.name, '') ilike $5
-             or coalesce(s.name, '') ilike $5
+             or smart_search_match(lower(unaccent(coalesce(ft.description, ''))), $4, $5)
+             or smart_search_match(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $4, $5)
+             or smart_search_match(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $4, $5)
            )
          group by ft.id, c.name, s.name
-         order by ft.created_at desc
+         order by greatest(
+           smart_search_score(lower(unaccent(coalesce(ft.description, ''))), $4, $5),
+           smart_search_score(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $4, $5),
+           smart_search_score(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $4, $5)
+         ) desc, ft.created_at desc
          limit $6
          offset $7`,
         [organizationId, titleType, status, query, likeQuery, limit, offset],
@@ -510,9 +517,9 @@ router.get('/finance/installments', async (request, response) => {
            and ($7 = '' or fi.due_date <= $7::date)
            and (
              $8 = ''
-             or coalesce(ft.description, '') ilike $9
-             or coalesce(c.name, '') ilike $9
-             or coalesce(s.name, '') ilike $9
+             or smart_search_match(lower(unaccent(coalesce(ft.description, ''))), $8, $9)
+             or smart_search_match(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $8, $9)
+             or smart_search_match(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $8, $9)
            )`,
         [organizationId, status, titleType, customerId, supplierId, dueFrom, dueTo, query, likeQuery],
       )
@@ -550,9 +557,9 @@ router.get('/finance/installments', async (request, response) => {
            and ($7 = '' or fi.due_date <= $7::date)
            and (
              $8 = ''
-             or coalesce(ft.description, '') ilike $9
-             or coalesce(c.name, '') ilike $9
-             or coalesce(s.name, '') ilike $9
+             or smart_search_match(lower(unaccent(coalesce(ft.description, ''))), $8, $9)
+             or smart_search_match(coalesce(c.name_search, lower(unaccent(coalesce(c.name, '')))), $8, $9)
+             or smart_search_match(coalesce(s.name_search, lower(unaccent(coalesce(s.name, '')))), $8, $9)
            )
          order by fi.due_date asc, fi.id asc
          limit $10
@@ -823,9 +830,9 @@ router.get('/finance/bank-transactions', async (request, response) => {
            and ($6 = '' or bt.occurred_at::date <= $6::date)
            and (
              $7 = ''
-             or coalesce(bt.description, '') ilike $8
-             or coalesce(bt.external_ref, '') ilike $8
-             or coalesce(fa.name, '') ilike $8
+             or smart_search_match(lower(unaccent(coalesce(bt.description, ''))), $7, $8)
+             or smart_search_match(lower(unaccent(coalesce(bt.external_ref, ''))), $7, $8)
+             or smart_search_match(lower(unaccent(coalesce(fa.name, ''))), $7, $8)
            )`,
         [organizationId, direction, status, accountId, from, to, query, likeQuery],
       )
@@ -854,9 +861,9 @@ router.get('/finance/bank-transactions', async (request, response) => {
            and ($6 = '' or bt.occurred_at::date <= $6::date)
            and (
              $7 = ''
-             or coalesce(bt.description, '') ilike $8
-             or coalesce(bt.external_ref, '') ilike $8
-             or coalesce(fa.name, '') ilike $8
+             or smart_search_match(lower(unaccent(coalesce(bt.description, ''))), $7, $8)
+             or smart_search_match(lower(unaccent(coalesce(bt.external_ref, ''))), $7, $8)
+             or smart_search_match(lower(unaccent(coalesce(fa.name, ''))), $7, $8)
            )
          order by bt.occurred_at desc, bt.created_at desc
          limit $9

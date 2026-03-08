@@ -33,7 +33,7 @@ router.get('/fleet/vehicles', async (req, res) => {
         `select count(*)::int as total from vehicles v
          where v.organization_id=$1
            and ($2='' or v.fleet_status=$2)
-           and ($3='' or v.plate ilike $4 or v.brand ilike $4 or v.model ilike $4)`,
+           and ($3='' or smart_search_match(lower(unaccent(v.plate)), $3, $4) or smart_search_match(lower(unaccent(v.brand)), $3, $4) or smart_search_match(lower(unaccent(v.model)), $3, $4))`,
         [orgId, status, query, like])
       const rows = await c.query(
         `select v.id, v.plate, v.brand, v.model, v.year, v.color, v.vin,
@@ -45,7 +45,7 @@ router.get('/fleet/vehicles', async (req, res) => {
          left join customers c on c.id=v.customer_id and c.organization_id=v.organization_id
          where v.organization_id=$1
            and ($2='' or v.fleet_status=$2)
-           and ($3='' or v.plate ilike $4 or v.brand ilike $4 or v.model ilike $4)
+           and ($3='' or smart_search_match(lower(unaccent(v.plate)), $3, $4) or smart_search_match(lower(unaccent(v.brand)), $3, $4) or smart_search_match(lower(unaccent(v.model)), $3, $4))
          order by v.created_at desc limit $5 offset $6`,
         [orgId, status, query, like, limit, offset])
       return { rows: rows.rows, total: Number(cnt.rows[0]?.total ?? 0) }

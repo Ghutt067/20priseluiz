@@ -17,7 +17,7 @@ router.get('/people/employees', async (request, response) => {
       const conditions = ['organization_id = $1']
       const values: unknown[] = [organizationId]
       let idx = 2
-      if (query) { conditions.push(`name ilike $${idx++}`); values.push(`%${query}%`) }
+      if (query) { conditions.push(`smart_search_match(lower(unaccent(name)), $${idx}, $${idx + 1})`); values.push(query, `%${query}%`); idx += 2 }
       if (status) { conditions.push(`status = $${idx++}`); values.push(status) }
       values.push(limit)
       const rows = await client.query(

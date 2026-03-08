@@ -8,6 +8,7 @@ import {
   type ReactNode,
   type UIEvent,
 } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import {
   createVirtualDropdownWindow,
   ensureDropdownItemVisible,
@@ -96,6 +97,7 @@ export function LookupField<T extends LookupItem>({
   const hasTypedRef = useRef(false)
 
   const isOpen = open && !disabled
+  const { mounted: dropMounted, exiting: dropExiting } = useAnimatedPresence(isOpen && results.length > 0, 180)
   const inputValue = isOpen
     ? (hasTypedRef.current ? query : (query || selectedLabel))
     : selectedLabel
@@ -352,8 +354,8 @@ export function LookupField<T extends LookupItem>({
         />
       </div>
 
-      {isOpen && (
-        <div className="purchase-order-search-dropdown">
+      {dropMounted && (
+        <div className={`purchase-order-search-dropdown ${dropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
           {showCreateForm && renderCreateForm ? (
             renderCreateForm({
               initialName: query.trim(),

@@ -9,6 +9,8 @@ import {
   type UIEvent,
   type ReactNode,
 } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
+import { normalizeLookupQuery } from '../../lib/searchUtils'
 import {
   createPurchaseOrder,
   fetchPurchaseOrderReceiveContext,
@@ -227,13 +229,6 @@ function parsePastedPurchaseItems(raw: string): PastedPurchaseItem[] {
     .filter((item): item is PastedPurchaseItem => item !== null)
 }
 
-function normalizeLookupQuery(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-}
 
 function getLookupCacheScope() {
   if (globalThis.window === undefined) return 'no-window'
@@ -407,6 +402,7 @@ function ProductLookupField({
   const skipNextFocusRef = useRef(false)
   const hasTypedRef = useRef(false)
   const isOpen = open && !disabled
+  const { mounted: dropMounted, exiting: dropExiting } = useAnimatedPresence(isOpen && results.length > 0, 180)
   const inputValue = isOpen
     ? (hasTypedRef.current ? query : (query || selectedLabel))
     : selectedLabel
@@ -669,8 +665,8 @@ function ProductLookupField({
         />
       </div>
 
-      {isOpen && (
-        <div className="purchase-product-dropdown">
+      {dropMounted && (
+        <div className={`purchase-product-dropdown ${dropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
           {showCreateForm && renderCreateForm ? (
             renderCreateForm({
               initialName: query.trim(),
@@ -768,6 +764,7 @@ function CatalogLookupField({
   const hasTypedRef = useRef(false)
 
   const isOpen = open && !disabled
+  const { mounted: catalogDropMounted, exiting: catalogDropExiting } = useAnimatedPresence(isOpen && options.length > 0, 180)
   const inputValue = isOpen
     ? (hasTypedRef.current ? query : (query || selectedLabel))
     : selectedLabel
@@ -1008,8 +1005,8 @@ function CatalogLookupField({
           disabled={disabled}
         />
       </div>
-      {isOpen && (
-        <div className="purchase-order-search-dropdown">
+      {catalogDropMounted && (
+        <div className={`purchase-order-search-dropdown ${catalogDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
           {showCreateForm && renderCreateForm ? (
             renderCreateForm({
               initialName: query.trim(),
@@ -1194,57 +1191,58 @@ function XmlImportPanel({ onImported }: { onImported: () => void }) {
 
   return (
     <section className="purchase-section" aria-label="Passo 4 - Importar XML">
-      <div style={{ display: 'grid', gap: 12, marginTop: 8 }}>
-        <label>
-          Arquivo XML
-          <input type="file" accept=".xml" onChange={handleFileSelect} />
-        </label>
+      <label>
+        Arquivo XML
+        <input type="file" accept=".xml" onChange={handleFileSelect} />
+      </label>
 
-        <label>
-          Ou cole o XML aqui
-          <textarea
-            value={xmlText}
-            onChange={(e) => setXmlText(e.target.value)}
-            
-            style={{ minHeight: 140, fontFamily: "'Sohne Mono', monospace", fontSize: '0.78rem' }}
-          />
-        </label>
+      <details>
+        <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500, listStyle: 'none' }}>Ou cole o XML manualmente</summary>
+        <textarea
+          value={xmlText}
+          onChange={(e) => setXmlText(e.target.value)}
+          style={{ minHeight: 120, fontFamily: "'Sohne Mono', monospace", fontSize: '0.78rem', marginTop: 8 }}
+        />
+      </details>
 
-        <div className="actions" style={{ display: 'flex', gap: 8 }}>
-          <button type="button" onClick={handleImport} disabled={importing || !xmlText.trim()}>
-          {importing ? 'Processando...' : 'Importar XML'}
-        </button>
+      {importStatus && (
+        <p className="subtitle purchase-feedback">{importStatus}</p>
+      )}
+
+      {importResult && (
+        <details open>
+          <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500, listStyle: 'none' }}>
+            {importResult.items.length} item(ns) identificado(s)
+            {importResult.supplierName ? ` — ${importResult.supplierName}` : ''}
+          </summary>
+          <div className="cadastro-list" style={{ marginTop: 6 }}>
+            {importResult.items.map((item, i) => (
+              <div key={`${item.description}-${i}`} className="cadastro-row" style={{ cursor: 'default' }}>
+                <div>
+                  <span className="cadastro-row-name">{item.description}</span>
+                  <span className="cadastro-row-meta">
+                    {' '}— Qtd: {item.quantity} · Custo: {item.unitCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>
+                </div>
+                {item.productId && <span className="cadastro-row-meta">Produto vinculado</span>}
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+
+      <div className="purchase-section-footer">
+        <span />
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="purchase-summary-action" onClick={handleImport} disabled={importing || !xmlText.trim()}>
+            {importing ? 'Processando...' : 'Importar XML'}
+          </button>
           {importResult && (
             <button type="button" className="ghost" onClick={onImported}>
               Concluir
             </button>
           )}
         </div>
-
-        <p className="subtitle purchase-feedback" style={{ visibility: importStatus ? 'visible' : 'hidden', margin: importStatus ? undefined : 0, height: importStatus ? undefined : 0, overflow: 'hidden' }}>{importStatus}</p>
-
-        {importResult && (
-          <div style={{ marginTop: 4 }}>
-            {importResult.supplierName && (
-              <p className="subtitle" style={{ marginBottom: 8 }}>
-                Fornecedor identificado: <strong>{importResult.supplierName}</strong>
-              </p>
-            )}
-            <div className="cadastro-list">
-              {importResult.items.map((item, i) => (
-                <div key={`${item.description}-${i}`} className="cadastro-row" style={{ cursor: 'default' }}>
-                  <div>
-                    <span className="cadastro-row-name">{item.description}</span>
-                    <span className="cadastro-row-meta">
-                      {' '}— Qtd: {item.quantity} · Custo: {item.unitCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                    </span>
-                  </div>
-                  {item.productId && <span className="cadastro-row-meta">Produto vinculado</span>}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )
@@ -2623,7 +2621,10 @@ export function ComprasPage() {
                 renderCreateForm={(props) => <InlineCreateForm type="warehouse" {...props} />}
               />
             </label>
-            {showOrderNotes || purchaseOrderForm.notes.trim() !== '' ? (
+          </div>
+          <details open={showOrderNotes || purchaseOrderForm.notes.trim() !== '' || purchaseOrderForm.expectedDeliveryDate.trim() !== ''}>
+            <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500, listStyle: 'none' }}>Mais opções</summary>
+            <div className="fiscal-grid" style={{ marginTop: 8 }}>
               <label>
                 Observações (opcional)
                 <input
@@ -2634,25 +2635,17 @@ export function ComprasPage() {
                   placeholder="Condições comerciais, prazo ou observações"
                 />
               </label>
-            ) : (
-              <button
-                type="button"
-                className="ghost purchase-inline-toggle"
-                onClick={() => setShowOrderNotes(true)}
-              >
-                Adicionar observações
-              </button>
-            )}
-            <label>
-              Prazo de entrega (opcional)
-              <DateInput
-                value={purchaseOrderForm.expectedDeliveryDate}
-                onChange={(event) =>
-                  setPurchaseOrderForm((state) => ({ ...state, expectedDeliveryDate: event.target.value }))
-                }
-              />
-            </label>
-          </div>
+              <label>
+                Prazo de entrega (opcional)
+                <DateInput
+                  value={purchaseOrderForm.expectedDeliveryDate}
+                  onChange={(event) =>
+                    setPurchaseOrderForm((state) => ({ ...state, expectedDeliveryDate: event.target.value }))
+                  }
+                />
+              </label>
+            </div>
+          </details>
 
           <div className="purchase-items">
             {purchaseOrderForm.items.map((item, itemIndex) => {
@@ -2741,26 +2734,25 @@ export function ComprasPage() {
           </div>
 
           <div className="purchase-totals">
-            
+            <button type="button" className="ghost" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={addOrderItem}>
+              + Item
+            </button>
             <strong>Total estimado: {fmtCurrency(orderTotal)}</strong>
           </div>
 
-          <div className="actions">
-            <button type="button" className="ghost" onClick={addOrderItem}>
-              Adicionar item
-            </button>
-          </div>
+          {purchaseOrderStatus && (
+            <p className="subtitle purchase-feedback">{purchaseOrderStatus}</p>
+          )}
 
-          <p className="subtitle purchase-feedback" style={{ visibility: purchaseOrderStatus ? 'visible' : 'hidden', margin: purchaseOrderStatus ? undefined : 0, height: purchaseOrderStatus ? undefined : 0, overflow: 'hidden' }}>{purchaseOrderStatus}</p>
-
-          <div className="actions" style={{ marginTop: 16, borderTop: '1px solid var(--border)', paddingTop: 16, justifyContent: 'space-between' }}>
+          <div className="purchase-section-footer">
             <button
               type="button"
               className="ghost"
+              style={{ padding: '4px 10px', fontSize: '0.78rem' }}
               aria-expanded={showShortcutsHelp}
               onClick={() => setShowShortcutsHelp((state) => !state)}
             >
-              Atalhos de teclado [?]
+              Atalhos [?]
             </button>
             <button
               type="button"
@@ -2864,7 +2856,7 @@ export function ComprasPage() {
                 </div>
               ))}
             {allOrders.filter((o) => orderStatusFilter === 'all' || o.status === orderStatusFilter).length === 0 && (
-              <EmptyState />
+              <EmptyState title="Nenhum pedido encontrado" />
             )}
           </div>
         </section>
@@ -2980,7 +2972,10 @@ export function ComprasPage() {
                 renderCreateForm={(props) => <InlineCreateForm type="warehouse" {...props} />}
               />
             </label>
-            {showReceiveNotes || purchaseReceiveForm.notes.trim() !== '' ? (
+          </div>
+          <details open={showReceiveNotes || purchaseReceiveForm.notes.trim() !== ''}>
+            <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--muted)', fontWeight: 500, listStyle: 'none' }}>Mais opções</summary>
+            <div className="fiscal-grid" style={{ marginTop: 8 }}>
               <label>
                 Observações (opcional)
                 <input
@@ -2991,19 +2986,11 @@ export function ComprasPage() {
                   placeholder="NF, conferência, avarias ou observações"
                 />
               </label>
-            ) : (
-              <button
-                type="button"
-                className="ghost purchase-inline-toggle"
-                onClick={() => setShowReceiveNotes(true)}
-              >
-                Adicionar observações
-              </button>
-            )}
-          </div>
+            </div>
+          </details>
 
           {!normalizedReceiveOrderSearchQuery && !linkedOrderMode && (recentPendingOrdersLoading || recentPendingOrders.length > 0) && (
-            <details className="purchase-receive-quick-list" open>
+            <details className="purchase-receive-quick-list">
               <summary>Ordens pendentes recentes</summary>
               <div className="actions">
                 
@@ -3150,40 +3137,53 @@ export function ComprasPage() {
           </div>
 
           <div className="purchase-totals">
-            
-            <strong>Total estimado: {fmtCurrency(receiveTotal)}</strong>
-          </div>
-
-          <div className="actions">
-            {Boolean(receiveContext) && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              {Boolean(receiveContext) && (
+                <button
+                  type="button"
+                  className="ghost"
+                  style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+                  disabled={pendingReceiveLineCount <= 0}
+                  onClick={fillReceiveItemsWithPending}
+                >
+                  Receber tudo
+                </button>
+              )}
+              {Boolean(receiveContext) && (
+                <button type="button" className="ghost" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={clearReceiveItemQuantities}>
+                  Zerar qtd
+                </button>
+              )}
               <button
                 type="button"
                 className="ghost"
-                disabled={pendingReceiveLineCount <= 0}
-                onClick={fillReceiveItemsWithPending}
+                style={{ padding: '4px 10px', fontSize: '0.78rem' }}
+                disabled={Boolean(receiveContext)}
+                onClick={addReceiveItem}
               >
-                Receber tudo (pendente)
+                + Item
               </button>
-            )}
-            {Boolean(receiveContext) && (
-              <button type="button" className="ghost" onClick={clearReceiveItemQuantities}>
-                Zerar quantidades
-              </button>
-            )}
-            <button
-              type="button"
-              className="ghost"
-              disabled={Boolean(receiveContext)}
-              onClick={addReceiveItem}
-            >
-              Adicionar item
-            </button>
-            <button type="button" className="ghost" onClick={() => setActiveStep('order')}>
-              Voltar para ordem
-            </button>
+            </div>
+            <strong>Total estimado: {fmtCurrency(receiveTotal)}</strong>
           </div>
 
-          <p className="subtitle purchase-feedback" style={{ visibility: purchaseReceiveStatus ? 'visible' : 'hidden', margin: purchaseReceiveStatus ? undefined : 0, height: purchaseReceiveStatus ? undefined : 0, overflow: 'hidden' }}>{purchaseReceiveStatus}</p>
+          {purchaseReceiveStatus && (
+            <p className="subtitle purchase-feedback">{purchaseReceiveStatus}</p>
+          )}
+
+          <div className="purchase-section-footer">
+            <button type="button" className="ghost" style={{ padding: '4px 10px', fontSize: '0.78rem' }} onClick={() => setActiveStep('order')}>
+              Voltar para ordem
+            </button>
+            <button
+              type="button"
+              className="purchase-summary-action"
+              onClick={() => void handleReceivePurchase()}
+              disabled={receiveSubmitting}
+            >
+              {receiveSubmitting ? 'Processando...' : 'Confirmar entrada'}
+            </button>
+          </div>
         </section>
       )}
 

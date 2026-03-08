@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 import { useStatusToast } from '../../hooks/useStatusToast'
 import {
   createAppointment,
@@ -74,6 +75,7 @@ export function CrmPage() {
 
   const [prodResults, setProdResults] = useState<Array<{ id: string; name: string; price: number }>>([])
   const [prodDropOpen, setProdDropOpen] = useState(false)
+  const { mounted: prodDropMounted, exiting: prodDropExiting } = useAnimatedPresence(prodDropOpen && prodResults.length > 0, 180)
   const prodTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null)
@@ -421,8 +423,8 @@ export function CrmPage() {
                   <input value={promoForm.productQuery} placeholder="Buscar produto..." onChange={(e) => { setPromoForm((s) => ({ ...s, productQuery: e.target.value })); searchProd(e.target.value) }}
                     onFocus={() => { if (prodResults.length > 0) setProdDropOpen(true) }}
                     onBlur={() => setTimeout(() => setProdDropOpen(false), 200)} />
-                  {prodDropOpen && prodResults.length > 0 && (
-                    <div className="pdv-search-dropdown">
+                  {prodDropMounted && (
+                    <div className={`pdv-search-dropdown ${prodDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                       {prodResults.map((p) => (
                         <button key={p.id} type="button" className="pdv-search-result" onMouseDown={() => {
                           setPromoForm((s) => ({ ...s, productId: p.id, productQuery: p.name, promoPrice: s.promoPrice || String(p.price) }))
@@ -462,8 +464,8 @@ export function CrmPage() {
                   <input value={returnForm.productQuery} placeholder="Buscar produto..." onChange={(e) => { setReturnForm((s) => ({ ...s, productQuery: e.target.value })); searchProd(e.target.value) }}
                     onFocus={() => { if (prodResults.length > 0) setProdDropOpen(true) }}
                     onBlur={() => setTimeout(() => setProdDropOpen(false), 200)} />
-                  {prodDropOpen && prodResults.length > 0 && (
-                    <div className="pdv-search-dropdown">
+                  {prodDropMounted && (
+                    <div className={`pdv-search-dropdown ${prodDropExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`}>
                       {prodResults.map((p) => (
                         <button key={p.id} type="button" className="pdv-search-result" onMouseDown={() => {
                           setReturnForm((s) => ({ ...s, productId: p.id, productQuery: p.name }))

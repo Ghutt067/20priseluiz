@@ -41,6 +41,45 @@ label {
   color: var(--muted);
 }
 
+/* ===== Dropdown rubber-band animation ===== */
+
+@keyframes dropdownRubberIn {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1.045);
+  }
+  72% {
+    transform: scaleY(0.985);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes dropdownRubberOut {
+  0% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(0);
+  }
+}
+
+.dropdown-rubber-enter {
+  animation: dropdownRubberIn 0.32s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  transform-origin: top center;
+  overflow: hidden !important;
+}
+
+.dropdown-rubber-exit {
+  animation: dropdownRubberOut 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+  transform-origin: top center;
+  overflow: hidden !important;
+  pointer-events: none;
+}
+
 /* ===== Custom Select ===== */
 
 .custom-select {
@@ -74,6 +113,10 @@ label {
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.15);
 }
 
+.custom-select-trigger:hover {
+  background: transparent;
+}
+
 .custom-select-trigger svg {
   flex-shrink: 0;
   opacity: 0.45;
@@ -93,7 +136,8 @@ label {
   display: grid;
   gap: 2px;
   max-height: 220px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 4px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -117,7 +161,6 @@ label {
   transition: background 0.1s ease;
 }
 
-.custom-select-option:hover,
 .custom-select-option.focused {
   background: var(--bg);
 }
@@ -170,9 +213,6 @@ button {
   transition: background 0.15s ease;
 }
 
-button:hover {
-  background: var(--accent-strong);
-}
 
 button:active {
   opacity: 0.9;
@@ -190,9 +230,6 @@ button.ghost {
   border-color: var(--accent);
 }
 
-button.ghost:hover {
-  background: rgba(var(--accent-rgb), 0.07);
-}
 
 /* ===== Card ===== */
 
@@ -352,10 +389,6 @@ button.ghost:hover {
   color: #2B2B2B;
 }
 
-.purchase-summary-action:hover {
-  background: var(--accent-strong);
-  border-color: var(--accent-strong);
-}
 
 .purchase-summary-action:disabled {
   opacity: 0.55;
@@ -374,24 +407,27 @@ button.ghost:hover {
 
 .purchase-shortcuts-panel {
   display: grid;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: rgba(43, 43, 43, 0.03);
+  gap: 4px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px dashed var(--border);
+  background: rgba(43, 43, 43, 0.02);
+  font-size: 0.78rem;
+  color: var(--muted);
 }
 
 .purchase-shortcuts-panel strong {
-  font-size: 0.86rem;
+  font-size: 0.8rem;
+  color: var(--text);
 }
 
 .purchase-shortcuts-panel ul {
   margin: 0;
   padding-left: 16px;
   display: grid;
-  gap: 3px;
+  gap: 2px;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .purchase-inline-toggle {
@@ -413,12 +449,7 @@ button.purchase-step-pill {
   padding: 8px 14px;
 }
 
-button.purchase-step-pill:hover {
-  background: rgba(43, 43, 43, 0.09);
-}
-
-button.purchase-step-pill.active,
-button.purchase-step-pill.active:hover {
+button.purchase-step-pill.active {
   background: var(--accent);
   border-color: var(--accent);
   color: #2B2B2B;
@@ -426,8 +457,8 @@ button.purchase-step-pill.active:hover {
 
 .purchase-section {
   display: grid;
-  gap: 14px;
-  padding: 14px;
+  gap: 10px;
+  padding: 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: rgba(43, 43, 43, 0.01);
@@ -440,16 +471,50 @@ button.purchase-step-pill.active:hover {
 
 .purchase-items {
   display: grid;
-  gap: 10px;
+  gap: 6px;
 }
 
 .purchase-item-row {
   display: grid;
-  gap: 10px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface);
+}
+
+.purchase-item-row .fiscal-grid {
+  gap: 8px;
+}
+
+.purchase-item-row label {
+  gap: 3px;
+  font-size: 0.78rem;
+}
+
+.purchase-item-row .actions {
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.purchase-item-row .actions .ghost {
+  padding: 4px 10px;
+  font-size: 0.78rem;
+}
+
+.purchase-section-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.purchase-section-footer .hint {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ===== Inventory workspace ===== */
@@ -574,10 +639,6 @@ button.purchase-step-pill.active:hover {
   font-weight: 500;
 }
 
-.inventory-link-button:hover {
-  background: rgba(var(--accent-rgb), 0.07);
-  text-decoration: none;
-}
 
 .inventory-pagination {
   display: flex;
@@ -701,7 +762,8 @@ button.purchase-step-pill.active:hover {
   display: grid;
   gap: 2px;
   max-height: 260px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 6px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -718,7 +780,8 @@ button.purchase-step-pill.active:hover {
   display: grid;
   gap: 0;
   max-height: 207px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   scroll-behavior: auto;
   overflow-anchor: none;
 }
@@ -746,9 +809,7 @@ button.purchase-step-pill.active:hover {
   overflow-wrap: anywhere;
 }
 
-.purchase-product-option:hover,
 .purchase-product-option.focused,
-.purchase-order-option:hover,
 .purchase-order-option.focused {
   background: var(--bg);
 }
@@ -864,7 +925,8 @@ button.purchase-step-pill.active:hover {
   background: var(--bg);
   border: 1px solid var(--border);
   max-height: 280px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   font-size: 0.8rem;
   color: var(--text);
   line-height: 1.6;
@@ -963,10 +1025,6 @@ button.purchase-step-pill.active:hover {
   transition: background 0.12s ease;
 }
 
-.sidebar-link:hover {
-  background: #C8C8C8;
-  text-decoration: none;
-}
 
 .sidebar-link.active {
   background: var(--accent);
@@ -1049,9 +1107,56 @@ button.purchase-step-pill.active:hover {
 
 /* ===== Sales panel ===== */
 
-.sales-panel {
+.sales-panel-shell {
   position: relative;
   overflow: visible;
+  border-radius: 10px;
+  transition: height 0.4s cubic-bezier(0.24, 0.84, 0.2, 1);
+}
+
+.sales-panel-shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transform-origin: top center;
+  pointer-events: none;
+}
+
+.sales-panel-shell-animating {
+  overflow: hidden;
+}
+
+.sales-panel-shell-animating::before {
+  will-change: transform;
+}
+
+.sales-panel-shell-grow::before {
+  animation: salesPanelShellGrow 0.4s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.sales-panel-shell-shrink::before {
+  animation: salesPanelShellShrink 0.4s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.sales-panel-shell-content {
+  position: relative;
+  z-index: 1;
+  padding: 28px;
+}
+
+.sales-panel {
+  position: relative;
+  display: grid;
+  gap: 16px;
+  overflow: visible;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
 }
 
 .sales-panel-content {
@@ -1064,6 +1169,256 @@ button.purchase-step-pill.active:hover {
 .sales-panel-content-hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+@keyframes salesPanelShellGrow {
+  0% {
+    transform: scaleY(0.966);
+  }
+
+  54% {
+    transform: scaleY(1.038);
+  }
+
+  76% {
+    transform: scaleY(0.992);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes salesPanelShellShrink {
+  0% {
+    transform: scaleY(1.022);
+  }
+
+  50% {
+    transform: scaleY(0.968);
+  }
+
+  74% {
+    transform: scaleY(1.006);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+.sales-ai-chat {
+  gap: 16px;
+  padding: 20px;
+}
+
+.sales-ai-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sales-ai-chat-header h3 {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.2;
+}
+
+.sales-ai-chat-body {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.sales-ai-chat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 16px;
+  scrollbar-gutter: stable;
+}
+
+.sales-ai-chat-compose {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.sales-ai-chat-empty {
+  margin: auto;
+  text-align: center;
+  max-width: 280px;
+  padding: 20px;
+  border: none;
+  background: transparent;
+}
+
+.sales-ai-chat-empty:only-child {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.sales-ai-chat-empty-title,
+.sales-ai-chat-empty-text {
+  margin: 0;
+}
+
+.sales-ai-chat-empty-title {
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.sales-ai-chat-empty-text {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.sales-ai-chat-message {
+  display: flex;
+  max-width: 100%;
+}
+
+.sales-ai-chat-message-user {
+  justify-content: flex-end;
+}
+
+.sales-ai-chat-message-assistant {
+  justify-content: flex-start;
+}
+
+.sales-ai-chat-bubble {
+  width: fit-content;
+  max-width: min(100%, 640px);
+  padding: 13px 15px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.sales-ai-chat-bubble-user {
+  background: #E5BA41;
+  border-color: #E5BA41;
+  border-bottom-right-radius: 8px;
+  color: #2b2b2b;
+}
+
+.sales-ai-chat-bubble-assistant {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  border-bottom-left-radius: 8px;
+  color: var(--text);
+}
+
+.sales-ai-chat-bubble-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 60px;
+  min-height: 46px;
+}
+
+.sales-ai-chat-loading-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--muted);
+  animation: salesAiChatDotPulse 1s ease-in-out infinite;
+}
+
+.sales-ai-chat-loading-dot:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.sales-ai-chat-loading-dot:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.sales-ai-chat-compose-row {
+  display: flex;
+  align-items: end;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sales-ai-chat-compose textarea {
+  flex: 1;
+  min-width: 0;
+  max-width: 320px;
+  min-height: 1lh;
+  max-height: 180px;
+  resize: none;
+  padding: 10px 0;
+  overflow-y: auto;
+  font: inherit;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.sales-ai-chat-compose textarea:focus {
+  border-color: transparent;
+  box-shadow: none;
+  outline: none;
+}
+
+.sales-ai-chat-compose textarea::placeholder {
+  color: var(--muted);
+}
+
+.sales-ai-chat-send {
+  padding: 10px 14px;
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.sales-ai-chat-error {
+  margin: 0;
+  padding-inline: 2px;
+  font-size: 0.8rem;
+  color: var(--danger, #dc2626);
+}
+
+@keyframes salesAiChatDotPulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  40% {
+    opacity: 0.95;
+    transform: translateY(-1px);
+  }
+}
+
+@media (max-width: 640px) {
+  .sales-ai-chat-compose-row {
+    grid-template-columns: 1fr;
+  }
+
+  .sales-ai-chat-send {
+    width: 100%;
+  }
 }
 
 .sales-panel-success-overlay {
@@ -1125,7 +1480,8 @@ button.purchase-step-pill.active:hover {
   display: grid;
   gap: 0;
   max-height: 279px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   scroll-behavior: auto;
   overflow-anchor: none;
 }
@@ -1144,9 +1500,6 @@ button.purchase-step-pill.active:hover {
   cursor: pointer;
 }
 
-.search-result:hover {
-  background: var(--bg);
-}
 
 .search-result.selected {
   border-color: var(--accent);
@@ -1410,9 +1763,6 @@ button.purchase-step-pill.active:hover {
   padding: 10px 12px;
 }
 
-.quote-row:hover {
-  border-color: var(--border-strong);
-}
 
 .quote-row-main {
   display: grid;
@@ -1448,6 +1798,42 @@ button.purchase-step-pill.active:hover {
   position: relative;
   flex: 1;
   min-width: 140px;
+  transform-origin: left center;
+  z-index: 31;
+}
+
+.customer-input-wrapper.rubber-h-enter {
+  animation: rubberHIn 0.32s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.customer-input-wrapper.rubber-h-exit {
+  animation: rubberHOut 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+  overflow: hidden !important;
+  pointer-events: none;
+}
+
+@keyframes rubberHIn {
+  0% {
+    transform: scaleX(0);
+  }
+  50% {
+    transform: scaleX(1.045);
+  }
+  72% {
+    transform: scaleX(0.985);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes rubberHOut {
+  0% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(0);
+  }
 }
 
 .customer-input-wrapper > input {
@@ -1483,7 +1869,8 @@ button.purchase-step-pill.active:hover {
   display: grid;
   gap: 0;
   max-height: 189px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   scroll-behavior: auto;
   overflow-anchor: none;
 }
@@ -1502,9 +1889,6 @@ button.purchase-step-pill.active:hover {
   font-size: 0.88rem;
 }
 
-.customer-result:hover {
-  background: var(--bg);
-}
 
 /* ===== Customer action row ===== */
 
@@ -1541,9 +1925,6 @@ button.purchase-step-pill.active:hover {
   background: var(--accent);
 }
 
-.action-primary:hover {
-  background: var(--accent-strong);
-}
 
 /* ===== Visually hidden ===== */
 
@@ -1599,11 +1980,8 @@ button.purchase-step-pill.active:hover {
   white-space: nowrap;
 }
 
-.btn-inline:hover { background: var(--bg); }
 .btn-inline.ok { border-color: rgba(56, 161, 105, 0.4); color: #38a169; }
-.btn-inline.ok:hover { background: rgba(56, 161, 105, 0.08); }
 .btn-inline.off { border-color: rgba(200, 80, 80, 0.4); color: #c44; }
-.btn-inline.off:hover { background: rgba(200, 80, 80, 0.08); }
 
 .cadastro-sub-panel {
   padding: 10px 14px 14px;
@@ -1882,7 +2260,8 @@ button.purchase-step-pill.active:hover {
   display: grid;
   gap: 2px;
   max-height: 280px;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .pdv-search-result {
@@ -1899,9 +2278,6 @@ button.purchase-step-pill.active:hover {
   font-size: 0.88rem;
 }
 
-.pdv-search-result:hover {
-  background: var(--bg);
-}
 
 .pdv-search-price {
   flex-shrink: 0;
@@ -1993,11 +2369,6 @@ button.purchase-step-pill.active:hover {
   cursor: pointer;
 }
 
-.pdv-remove-btn:hover {
-  border-color: #c44;
-  color: #c44;
-  background: transparent;
-}
 
 .pdv-total-line {
   display: flex;
@@ -2281,10 +2652,6 @@ button.purchase-step-pill.active:hover {
   transition: border-color 0.15s ease;
 }
 
-.cadastro-row:hover {
-  border-color: var(--accent);
-  background: var(--surface);
-}
 
 .cadastro-row-name {
   font-weight: 500;
@@ -2364,7 +2731,7 @@ button.purchase-step-pill.active:hover {
 }
 
 .order-footer-row > .payment-combobox {
-  width: 210px;
+  width: 200px;
   flex-shrink: 0;
 }
 
@@ -2526,9 +2893,6 @@ button.purchase-step-pill.active:hover {
   color: var(--muted);
 }
 
-.finance-aging-card-button:hover {
-  border-color: var(--accent);
-}
 
 .finance-aging-card-button.active {
   border-color: var(--accent);
@@ -2744,11 +3108,6 @@ button.purchase-step-pill.active:hover {
   justify-content: center;
 }
 
-.v-modal-close:hover {
-  background: var(--bg);
-  border-color: var(--border);
-  color: var(--text);
-}
 
 .v-modal-body {
   padding: 18px 22px;
@@ -2788,10 +3147,6 @@ button.purchase-step-pill.active:hover {
   border-radius: 0;
 }
 
-.v-tab:hover {
-  color: var(--text);
-  background: transparent;
-}
 
 .v-tab.active {
   color: var(--text);
@@ -2862,10 +3217,6 @@ button.purchase-step-pill.active:hover {
   justify-content: center;
 }
 
-.v-toast-dismiss:hover {
-  background: var(--bg);
-  color: var(--text);
-}
 
 /* ===== DataTable ===== */
 
@@ -2910,9 +3261,6 @@ button.purchase-step-pill.active:hover {
   transition: background 0.1s ease;
 }
 
-.v-table-clickable:hover {
-  background: rgba(43, 43, 43, 0.03);
-}
 
 .v-table-compact th { padding: 7px 10px; }
 .v-table-compact td { padding: 7px 10px; font-size: 0.84rem; }
@@ -2953,9 +3301,6 @@ button.purchase-step-pill.active:hover {
   cursor: pointer;
 }
 
-.v-pagination-btn:hover:not(:disabled) {
-  background: var(--bg);
-}
 
 .v-pagination-btn:disabled {
   opacity: 0.35;
@@ -3066,9 +3411,6 @@ button.purchase-step-pill.active:hover {
   color: #fff;
 }
 
-.v-btn-danger:hover {
-  background: #b33;
-}
 
 /* ===== FormField ===== */
 
@@ -3221,9 +3563,6 @@ button.purchase-step-pill.active:hover {
   transition: border-color 0.15s ease;
 }
 
-.v-kpi-clickable:hover {
-  border-color: var(--accent);
-}
 
 button.v-kpi-card {
   text-align: left;
@@ -3315,10 +3654,6 @@ button.v-kpi-card {
   justify-content: center;
 }
 
-.v-detail-close:hover {
-  background: var(--bg);
-  color: var(--text);
-}
 
 .v-detail-body {
   padding: 16px 18px;
@@ -3436,7 +3771,6 @@ button.v-kpi-card {
   cursor: pointer;
 }
 
-.v-cmd-item:hover,
 .v-cmd-selected {
   background: var(--bg);
 }
@@ -3454,6 +3788,23 @@ button.v-kpi-card {
 
 .history-table-wrap {
   margin-top: 12px;
+}
+
+.history-table-wrap.history-preview {
+  max-height: 355px;
+  overflow: hidden;
+}
+
+.history-full-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.history-full-header span {
+  font-weight: 600;
+  font-size: 1rem;
 }
 
 .history-table {
@@ -3475,9 +3826,6 @@ button.v-kpi-card {
   border-bottom: 1px solid var(--border);
 }
 
-.history-table tbody tr:hover {
-  background: var(--bg);
-}
 
 .history-table tbody td {
   padding: 12px;
@@ -3551,9 +3899,6 @@ button.v-kpi-card {
   transition: color 0.12s ease;
 }
 
-.history-expand-btn:hover {
-  color: var(--text);
-}
 
 .history-table tbody tr.expanded {
   background: var(--bg);
@@ -3668,6 +4013,7 @@ button.v-kpi-card {
   inset: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 10px 12px;
   font-size: 0.88rem;
   color: var(--text);
@@ -3727,7 +4073,6 @@ button.v-kpi-card {
   white-space: nowrap;
 }
 
-.payment-combobox-option:hover,
 .payment-combobox-option.focused {
   background: var(--bg);
 }
@@ -3737,6 +4082,24 @@ button.v-kpi-card {
 }
 
 /* ===== Reduced motion ===== */
+
+/* ===== Ripple Effect ===== */
+
+.ripple-effect {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transform: scale(0);
+  pointer-events: none;
+  opacity: 1;
+}
+
+.ripple-effect-active {
+  transform: scale(1);
+  opacity: 0;
+  transition: transform 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,

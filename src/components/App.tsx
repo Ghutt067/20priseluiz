@@ -32,9 +32,11 @@ import { SignupPage } from '../features/auth/SignupPage'
 import { TeamPage } from '../features/admin/TeamPage'
 import { ConfiguracoesPage } from '../features/admin/ConfiguracoesPage'
 import { useAuth } from '../contexts/useAuth'
+import { useRipple } from '../hooks/useRipple'
 import '../styles/app.css'
 
 function App() {
+  useRipple()
   const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const location = useLocation()

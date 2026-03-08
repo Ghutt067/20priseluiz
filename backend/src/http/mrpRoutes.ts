@@ -27,14 +27,14 @@ router.get('/mrp/bom', async (req, res) => {
       const cnt = await c.query<{ total: number }>(
         `select count(*)::int as total from bill_of_materials b
          join products p on p.id=b.product_id and p.organization_id=b.organization_id
-         where b.organization_id=$1 and ($2='' or b.name ilike $3 or p.name ilike $3)`,
+         where b.organization_id=$1 and ($2='' or smart_search_match(lower(unaccent(b.name)), $2, $3) or smart_search_match(coalesce(p.name_search, lower(unaccent(p.name))), $2, $3))`,
         [orgId, query, like])
       const rows = await c.query(
         `select b.id, b.name, b.version, b.active, b.product_id as "productId",
                 p.name as "productName", p.sku as "productSku", b.created_at as "createdAt"
          from bill_of_materials b
          join products p on p.id=b.product_id and p.organization_id=b.organization_id
-         where b.organization_id=$1 and ($2='' or b.name ilike $3 or p.name ilike $3)
+         where b.organization_id=$1 and ($2='' or smart_search_match(lower(unaccent(b.name)), $2, $3) or smart_search_match(coalesce(p.name_search, lower(unaccent(p.name))), $2, $3))
          order by b.created_at desc limit $4 offset $5`,
         [orgId, query, like, limit, offset])
       return { rows: rows.rows, total: Number(cnt.rows[0]?.total ?? 0) }

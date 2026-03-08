@@ -28,6 +28,7 @@ import { wmsRoutes } from './http/wmsRoutes'
 import { assetRoutes } from './http/assetRoutes'
 import { advancedFinanceRoutes } from './http/advancedFinanceRoutes'
 import { megaModulesRoutes } from './http/megaModulesRoutes'
+import { aiRoutes } from './http/aiRoutes'
 
 dotenv.config()
 
@@ -65,6 +66,7 @@ app.use(wmsRoutes)
 app.use(assetRoutes)
 app.use(advancedFinanceRoutes)
 app.use(megaModulesRoutes)
+app.use(aiRoutes)
 
 app.get('/health', (_request, response) => {
   response.json({ status: 'ok' })

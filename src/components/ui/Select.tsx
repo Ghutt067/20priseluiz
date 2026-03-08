@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type CSSProperties } from 'react'
+import { useAnimatedPresence } from '../../hooks/useAnimatedPresence'
 
 export type SelectOption = {
   value: string
@@ -21,6 +22,7 @@ export function Select({ value, options, onChange, className, style, disabled = 
   const selectedLabel = options.find((o) => o.value === value)?.label ?? ''
 
   const close = useCallback(() => setOpen(false), [])
+  const { mounted: menuMounted, exiting: menuExiting } = useAnimatedPresence(open, 180)
 
   useEffect(() => {
     if (!open) return
@@ -63,12 +65,12 @@ export function Select({ value, options, onChange, className, style, disabled = 
         onClick={() => setOpen((prev) => !prev)}
       >
         <span>{selectedLabel}</span>
-        <svg width="10" height="6" viewBox="0 0 10 6" fill="currentColor" aria-hidden="true">
-          <path d="M0 0l5 6 5-6z" />
+        <svg width="10" height="10" viewBox="0 0 32 32" style={{ transform: 'rotate(180deg)' }} fill="#2B2B2B" aria-hidden="true">
+          <path d="M29.9,28.6l-13-26c-0.3-0.7-1.4-0.7-1.8,0l-13,26c-0.2,0.4-0.1,0.8,0.2,1.1C2.5,30,3,30.1,3.4,29.9L16,25.1l12.6,4.9c0.1,0,0.2,0.1,0.4,0.1c0.3,0,0.5-0.1,0.7-0.3C30,29.4,30.1,28.9,29.9,28.6z"/>
         </svg>
       </button>
-      {open && (
-        <div className="custom-select-menu" role="listbox">
+      {menuMounted && (
+        <div className={`custom-select-menu ${menuExiting ? 'dropdown-rubber-exit' : 'dropdown-rubber-enter'}`} role="listbox">
           {options.map((opt) => (
             <button
               key={opt.value}
